@@ -4,7 +4,7 @@
 
 <link rel="stylesheet" href="{{ asset('css/unidade/UnidadeSeguranca.css') }}">
 
-<!-- @php $unidade = auth()->guard('unidade')->user(); @endphp -->
+
 
 <main class="main-dashboard">
     <div class="security-container">
@@ -26,11 +26,13 @@
 
             <form action="{{ route('unidade.alterarSenha') }}" method="POST" class="security-form" id="securityForm">
                 @csrf
+                
+               
                 <div class="form-group">
                     <label for="senha_atual">Senha Atual:</label>
-                    <div class="password-input-container">
+                    <div class="input-wrapper"> {{-- Wrapper Adicionado --}}
                         <input type="password" id="senha_atual" name="senha_atual" required>
-                        <i class="bi bi-eye-fill toggle-password" data-target="senha_atual"></i>
+                        <i id="toggleSenhaAtual" class="bi bi-eye-slash icon-right-pass"></i> {{-- Ícone Adicionado --}}
                     </div>
                     @error('senha_atual')
                         <small class="error-message">{{ $message }}</small>
@@ -38,9 +40,9 @@
                 </div>
                 <div class="form-group">
                     <label for="nova_senha">Nova Senha:</label>
-                    <div class="password-input-container">
+                    <div class="input-wrapper"> {{-- Wrapper Adicionado --}}
                         <input type="password" id="nova_senha" name="nova_senha" required>
-                        <i class="bi bi-eye-fill toggle-password" data-target="nova_senha"></i>
+                        <i id="toggleNovaSenha" class="bi bi-eye-slash icon-right-pass"></i> {{-- Ícone Adicionado --}}
                     </div>
                     <small class="form-hint">Mínimo de 8 caracteres, incluindo números e letras</small>
                     @error('nova_senha')
@@ -49,9 +51,9 @@
                 </div>
                 <div class="form-group">
                     <label for="nova_senha_confirmation">Confirmar Nova Senha:</label>
-                    <div class="password-input-container">
+                     <div class="input-wrapper"> {{-- Wrapper Adicionado --}}
                         <input type="password" id="nova_senha_confirmation" name="nova_senha_confirmation" required>
-                        <i class="bi bi-eye-fill toggle-password" data-target="nova_senha_confirmation"></i>
+                        <i id="toggleNovaSenhaConf" class="bi bi-eye-slash icon-right-pass"></i> {{-- Ícone Adicionado --}}
                     </div>
                 </div>
 
@@ -62,6 +64,7 @@
     </div>
 </main>
 
+{{-- Modais (HTML) --}}
 <div id="confirmationModal" class="modal-overlay">
     <div class="modal-box">
         <i class="bi bi-exclamation-triangle-fill modal-icon icon-warning"></i>
@@ -81,11 +84,15 @@
         <h2>Senha Alterada!</h2>
         <p>{{ session('success') }}</p>
         <div class="modal-buttons">
-            <button type="button" class="modal-btn modal-btn-confirm" onclick="hideSuccessModal()">Fechar</button>
+            <button type="button" class="modal-btn modal-btn-confirm" onclick="redirectToProfile()">
+                Fechar
+            </button>
         </div>
     </div>
 </div>
 @endif
+
+
 
 <script>
     const form = document.getElementById('securityForm'); 
@@ -94,49 +101,27 @@
     const confirmChangePasswordButton = document.getElementById('confirmChangePassword');
     const successModal = document.getElementById('successModal');
 
-    // Funções para mostrar/ocultar senha
-    function setupPasswordToggle() {
-        const toggleButtons = document.querySelectorAll('.toggle-password');
-        
-        toggleButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const targetId = this.getAttribute('data-target');
-                const passwordInput = document.getElementById(targetId);
-                const icon = this;
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    icon.classList.remove('bi-eye-fill');
-                    icon.classList.add('bi-eye-slash-fill');
-                } else {
-                    passwordInput.type = 'password';
-                    icon.classList.remove('bi-eye-slash-fill');
-                    icon.classList.add('bi-eye-fill');
-                }
-            });
-        });
+    // --- Função de Redirecionamento (Corrigida) ---
+    function redirectToProfile() {
+        window.location.href = "{{ route('unidade.perfil') }}";
     }
 
-    // Funções dos modais
+    // Funções dos Modais
     function showConfirmationModal() {
         if (confirmationModal) confirmationModal.classList.add('show');
     }
-
     function hideConfirmationModal() {
         if (confirmationModal) confirmationModal.classList.remove('show');
     }
-
     function hideSuccessModal() {
         if (successModal) {
             successModal.classList.remove('show');
-            // Redireciona para o perfil após fechar o modal de sucesso
-            setTimeout(() => {
-                window.location.href = "{{ route('unidade.perfil') }}";
-            }, 300);
+            redirectToProfile(); // Redireciona
         }
     }
 
-    if (openConfirmationModalButton && form) {
+    // Event Listeners dos Modais
+    if (openConfirmationModalButton) {
         openConfirmationModalButton.addEventListener('click', (event) => {
             if (form.checkValidity()) {
                 showConfirmationModal();
@@ -145,33 +130,41 @@
             }
         });
     }
-
-    if (confirmChangePasswordButton && form) {
+    if (confirmChangePasswordButton) {
         confirmChangePasswordButton.addEventListener('click', () => {
             hideConfirmationModal();
             form.submit(); 
         });
     }
-
     window.onclick = function(event) {
-        if (event.target === confirmationModal) {
+        if (event.target == confirmationModal) {
             hideConfirmationModal();
         }
-        if (event.target === successModal) {
-            hideSuccessModal();
+        if (event.target == successModal) {
+            hideSuccessModal(); 
         }
     }
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            hideConfirmationModal();
-            hideSuccessModal();
+    // --- FUNÇÃO ADICIONADA PARA O "OLHINHO" ---
+    function setupPasswordToggle(inputId, toggleId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        
+        if (input && toggle) {
+            toggle.addEventListener('click', () => {
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                
+                toggle.classList.toggle('bi-eye');
+                toggle.classList.toggle('bi-eye-slash');
+            });
         }
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        setupPasswordToggle();
-    });
+    setupPasswordToggle('senha_atual', 'toggleSenhaAtual');
+    setupPasswordToggle('nova_senha', 'toggleNovaSenha');
+    setupPasswordToggle('nova_senha_confirmation', 'toggleNovaSenhaConf');
+
 </script>
 
 @endsection

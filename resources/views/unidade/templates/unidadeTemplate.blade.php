@@ -6,17 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Painel da Unidade')</title>
 
-    {{-- CSS principal --}}
     <link rel="stylesheet" href="{{ asset('css/unidade/template.css') }}">
-
-    {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    
+    @yield('styles')
 </head>
 
 <body>
-    {{-- Sidebar --}}
     <div class="sidebar">
-        {{-- 🔥 CORREÇÃO: O link do logo deve ir para o dashboard da unidade --}}
         <a href="{{ route('unidade.dashboard') }}" class="logo-link">
             <img src="{{ asset('img/unidade-logo2.png') }}" alt="Logo Prontuário+" class="logo">
         </a>
@@ -51,7 +48,6 @@
                 <span class="nav-text">Perfil</span>
             </a>
 
-            {{-- Logout --}}
             <a href="{{ route('unidade.logout') }}"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-item">
                 <i class="bi bi-power"></i>
@@ -63,26 +59,25 @@
         </nav>
     </div>
 
-    {{-- Header --}}
     <header class="header">
-        {{-- 🔥 CORREÇÃO: Usar a variável $unidade e a rota unidade.perfil --}}
+        @php $unidadeLogada = Auth::guard('unidade')->user(); @endphp
+
         <a href="{{ route('unidade.perfil') }}" class="user-info" style="text-decoration: none; color: inherit;">
-            @if(isset($unidade) && $unidade->foto)
-            <img src="{{ asset('storage/fotos/' . $unidade->foto) }}" alt="Foto da Unidade">
+            
+            @if($unidadeLogada && $unidadeLogada->foto)
+                <img src="{{ asset('storage/' . $unidadeLogada->foto) }}" alt="Foto da Unidade">
             @else
-            <img src="{{ asset('img/usuario-de-perfil.png') }}" alt="Foto padrão">
+                <img src="{{ asset('img/usuario-de-perfil.png') }}" alt="Foto padrão">
             @endif
-            {{-- 🔥 CORREÇÃO: Ajustar o nome da variável --}}
-            <span>{{ $unidade->nomeUnidade ?? 'Unidade' }}</span>
+            
+            <span>{{ $unidadeLogada->nomeUnidade ?? 'Unidade' }}</span>
         </a>
     </header>
 
-    {{-- Conteúdo Dinâmico --}}
     <main class="main-dashboard">
         @yield('content')
     </main>
 
-    {{-- Script para sincronizar header e conteúdo com sidebar --}}
     <script>
         const sidebar = document.querySelector('.sidebar');
         const header = document.querySelector('.header');
@@ -98,6 +93,8 @@
             mainDashboard.style.marginLeft = '100px';
         });
     </script>
+    
+    @stack('scripts') 
 </body>
 
 </html>

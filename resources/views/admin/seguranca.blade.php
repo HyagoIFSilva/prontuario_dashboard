@@ -5,6 +5,31 @@
 {{-- Garante que o CSS está linkado --}}
 <link rel="stylesheet" href="{{ asset('css/admin/AdmSeguranca.css') }}">
 
+{{-- CSS Adicional (Para o "Olhinho") --}}
+<style>
+    .form-group .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .form-group .input-wrapper input {
+        width: 100%;
+        padding-right: 45px !important; 
+    }
+    .form-group .icon-right-pass {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6B7280; 
+        font-size: 1.1rem;
+    }
+    .form-group .icon-right-pass:hover {
+        color: #111827; 
+    }
+</style>
+
 @php $admin = auth()->guard('admin')->user(); @endphp
 
 <main class="main-dashboard">
@@ -12,7 +37,6 @@
         <h1 class="main-title"><i class="bi bi-shield-lock-fill"></i> Configurações de Segurança</h1>
         <p class="main-subtitle">Gerencie suas configurações de segurança e privacidade</p>
 
-        {{-- Mensagens de erro GLOBAIS (apenas erro) --}}
         @if($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -26,19 +50,25 @@
         <div class="security-section">
             <h2><i class="bi bi-key-fill"></i> Alterar Senha</h2>
 
-            {{-- O ID 'securityForm' foi adicionado para o JavaScript --}}
             <form action="{{ route('admin.alterarSenha') }}" method="POST" class="security-form" id="securityForm">
                 @csrf
+                
                 <div class="form-group">
                     <label for="senha_atual">Senha Atual:</label>
-                    <input type="password" id="senha_atual" name="senha_atual" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="senha_atual" name="senha_atual" required>
+                        <i id="toggleSenhaAtual" class="bi bi-eye-slash icon-right-pass"></i>
+                    </div>
                     @error('senha_atual')
                         <small class="error-message">{{ $message }}</small>
                     @enderror
                 </div>
                 <div class="form-group">
                     <label for="nova_senha">Nova Senha:</label>
-                    <input type="password" id="nova_senha" name="nova_senha" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="nova_senha" name="nova_senha" required>
+                        <i id="toggleNovaSenha" class="bi bi-eye-slash icon-right-pass"></i>
+                    </div>
                     <small class="form-hint">Mínimo de 8 caracteres, incluindo números e letras</small>
                     @error('nova_senha')
                         <small class="error-message">{{ $message }}</small>
@@ -46,10 +76,12 @@
                 </div>
                 <div class="form-group">
                     <label for="nova_senha_confirmation">Confirmar Nova Senha:</label>
-                    <input type="password" id="nova_senha_confirmation" name="nova_senha_confirmation" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="nova_senha_confirmation" name="nova_senha_confirmation" required>
+                        <i id="toggleNovaSenhaConf" class="bi bi-eye-slash icon-right-pass"></i>
+                    </div>
                 </div>
                 
-                {{-- ALTERADO: type="submit" para type="button" e adicionado ID para JS --}}
                 <button type="button" id="openConfirmationModal" class="btn-primary">Alterar Senha</button>
             </form>
         </div>
@@ -57,11 +89,7 @@
     </div>
 </main>
 
-{{-- ============================================ --}}
-{{-- 1. HTML DOS MODAIS (AGORA INCLUÍDO CORRETAMENTE) --}}
-{{-- ============================================ --}}
-
-{{-- MODAL DE CONFIRMAÇÃO (Alerta Amarelo/Laranja) --}}
+{{-- MODAL DE CONFIRMAÇÃO --}}
 <div id="confirmationModal" class="modal-overlay">
     <div class="modal-box">
         <i class="bi bi-exclamation-triangle-fill modal-icon icon-warning"></i>
@@ -74,7 +102,7 @@
     </div>
 </div>
 
-{{-- MODAL DE SUCESSO (Alerta Verde) --}}
+{{-- MODAL DE SUCESSO --}}
 @if(session('success'))
 <div id="successModal" class="modal-overlay show">
     <div class="modal-box">
@@ -82,67 +110,83 @@
         <h2>Senha Alterada!</h2>
         <p>{{ session('success') }}</p>
         <div class="modal-buttons">
-            <button type="button" class="modal-btn modal-btn-confirm" onclick="hideSuccessModal()">Fechar</button>
+            <button type="button" class="modal-btn modal-btn-confirm" 
+                    onclick="window.location.href = '{{ route('admin.perfil') }}'">
+                Fechar
+            </button>
         </div>
     </div>
 </div>
 @endif
 
 
-{{-- ============================================ --}}
-{{-- 2. SCRIPT PARA CONTROLE DOS MODAIS (CORRIGIDO) --}}
-{{-- ============================================ --}}
 <script>
-    // Referências aos elementos
-    const form = document.getElementById('securityForm'); // Referência ao FORM com o novo ID
+    const form = document.getElementById('securityForm'); 
     const openConfirmationModalButton = document.getElementById('openConfirmationModal');
     const confirmationModal = document.getElementById('confirmationModal');
     const confirmChangePasswordButton = document.getElementById('confirmChangePassword');
     const successModal = document.getElementById('successModal');
 
-    // Funções para o Modal de Confirmação
+    function redirectToProfile() {
+        window.location.href = '{{ route('admin.perfil') }}';
+    }
+
     function showConfirmationModal() {
         if (confirmationModal) confirmationModal.classList.add('show');
     }
-
     function hideConfirmationModal() {
         if (confirmationModal) confirmationModal.classList.remove('show');
     }
-
     function hideSuccessModal() {
-        if (successModal) successModal.classList.remove('show');
+        if (successModal) {
+             successModal.classList.remove('show');
+             redirectToProfile(); 
+        }
     }
 
-    // 1. Liga o botão "Alterar Senha" para mostrar o modal de confirmação
     if (openConfirmationModalButton) {
         openConfirmationModalButton.addEventListener('click', (event) => {
-            // Verifica se o formulário é válido (campos 'required' preenchidos)
             if (form.checkValidity()) {
                 showConfirmationModal();
             } else {
-                // Se não for válido, dispara a validação padrão do navegador
                 form.reportValidity();
             }
         });
     }
 
-    // 2. Liga o botão de Confirmação do modal para realmente enviar o formulário
     if (confirmChangePasswordButton) {
         confirmChangePasswordButton.addEventListener('click', () => {
             hideConfirmationModal();
-            form.submit(); // Envia o formulário
+            form.submit(); 
         });
     }
 
-    // 3. Lógica para fechar os modais ao clicar fora
     window.onclick = function(event) {
         if (event.target == confirmationModal) {
             hideConfirmationModal();
         }
         if (event.target == successModal) {
-            hideSuccessModal();
+            hideSuccessModal(); 
         }
     }
+
+    function setupPasswordToggle(inputId, toggleId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        
+        if (input && toggle) {
+            toggle.addEventListener('click', () => {
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                toggle.classList.toggle('bi-eye');
+                toggle.classList.toggle('bi-eye-slash');
+            });
+        }
+    }
+
+    setupPasswordToggle('senha_atual', 'toggleSenhaAtual');
+    setupPasswordToggle('nova_senha', 'toggleNovaSenha');
+    setupPasswordToggle('nova_senha_confirmation', 'toggleNovaSenhaConf');
 </script>
 
 @endsection

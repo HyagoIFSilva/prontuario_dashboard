@@ -39,34 +39,40 @@
                 <div class="split-group">
                     <div class="input-group">
                         <label for="tipoUnidade">Tipo de Unidade</label>
-                        <input type="text" name="tipoUnidade" id="tipoUnidade" value="{{ old('tipoUnidade') }}"
-                            placeholder="Ex: Hospital Geral, UBS">
+                        <select name="tipoUnidade" id="tipoUnidade" class="input-select" required>
+                            <option value="" disabled {{ old('tipoUnidade') ? '' : 'selected' }}>Selecione um tipo...</option>
+                            <option value="Hospital" {{ old('tipoUnidade') == 'Hospital' ? 'selected' : '' }}>Hospital</option>
+                            <option value="Clínica" {{ old('tipoUnidade') == 'Clínica' ? 'selected' : '' }}>Clínica</option>
+                            <option value="UBS (Unidade Básica de Saúde)" {{ old('tipoUnidade') == 'UBS (Unidade Básica de Saúde)' ? 'selected' : '' }}>UBS (Unidade Básica de Saúde)</option>
+                            <option value="UPA (Unidade de Pronto Atendimento)" {{ old('tipoUnidade') == 'UPA (Unidade de Pronto Atendimento)' ? 'selected' : '' }}>UPA (Unidade de Pronto Atendimento)</option>
+                            <option value="Posto de Saúde" {{ old('tipoUnidade') == 'Posto de Saúde' ? 'selected' : '' }}>Posto de Saúde</option>
+                            <option value="Laboratório" {{ old('tipoUnidade') == 'Laboratório' ? 'selected' : '' }}>Laboratório</option>
+                            <option value="Outro" {{ old('tipoUnidade') == 'Outro' ? 'selected' : '' }}>Outro</option>
+                        </select>
                     </div>
 
                     <div class="input-group">
                         <label for="cnpjUnidade" class="form-label">CNPJ</label>
                         <input type="text" name="cnpjUnidade" id="cnpjUnidade" value="{{ old('cnpjUnidade') }}"
-                            placeholder="Ex: XX.XXX.XXX/0001-XX">
+                            placeholder="XX.XXX.XXX/0001-XX" maxlength="18">
                     </div>
 
-                    <!-- E-mail -->
                     <div class="input-group">
                         <label for="emailUnidade" class="form-label">E-mail da Unidade</label>
                         <input type="email" name="emailUnidade" id="emailUnidade" value="{{ old('emailUnidade') }}"
-                         placeholder="Ex: hospital@gmail.com">
+                           placeholder="Ex: hospital@gmail.com">
                     </div>
 
                     <div class="input-group">
                         <label for="telefoneUnidade">Telefone</label>
-                        <input type="text" name="telefoneUnidade" id="telefoneUnidade" value="{{ old('telefoneUnidade') }}"
-                            placeholder="(11) 99999-9999">
+                        <input type="tel" name="telefoneUnidade" id="telefoneUnidade" value="{{ old('telefoneUnidade') }}"
+                            placeholder="(XX) XXXXX-XXXX" maxlength="15">
                     </div>
                 </div>
 
                 <hr class="section-separator">
                 <div class="form-section-title">Endereço</div>
 
-                {{-- CAMPO DE CEP AGORA FICA NO TOPO --}}
                 <div class="input-group">
                     <label for="cepUnidade">CEP</label>
                     <input type="text" name="cepUnidade" id="cepUnidade" value="{{ old('cepUnidade') }}"
@@ -109,12 +115,12 @@
                     <div class="input-group">
                         <label for="estadoUnidade">Estado</label>
                         <input type="text" name="estadoUnidade" id="estadoUnidade" value="{{ old('estadoUnidade') }}"
-                            placeholder="Ex: São Paulo">
+                            placeholder="Preenchido automaticamente">
                     </div>
                     <div class="input-group">
                         <label for="paisUnidade">País</label>
-                        <input type="text" name="paisUnidade" id="paisUnidade" value="{{ old('paisUnidade') }}"
-                            placeholder="Brasil">
+                        <input type="text" name="paisUnidade" id="paisUnidade" value="{{ old('paisUnidade') ?? 'Brasil' }}"
+                            placeholder="Brasil" readonly>
                     </div>
                 </div>
 
@@ -123,48 +129,60 @@
         </div>
     </main>
 
-    {{-- SCRIPT DA API VIACEP --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            
             const cepInput = document.getElementById('cepUnidade');
             const logradouroInput = document.getElementById('logradouroUnidade');
             const bairroInput = document.getElementById('bairroUnidade');
             const cidadeInput = document.getElementById('cidadeUnidade');
             const ufInput = document.getElementById('ufUnidade');
+            const estadoInput = document.getElementById('estadoUnidade');
+            const paisInput = document.getElementById('paisUnidade');
             const numeroInput = document.getElementById('numLogradouroUnidade');
+            const cnpjInput = document.getElementById('cnpjUnidade');
+            const telefoneInput = document.getElementById('telefoneUnidade');
+            const nomeUnidadeInput = document.getElementById('nomeUnidade');
 
-            // Adiciona um "ouvinte" que é acionado quando o utilizador sai do campo do CEP
+            const ufParaEstado = {
+                'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas',
+                'BA': 'Bahia', 'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo',
+                'GO': 'Goiás', 'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul',
+                'MG': 'Minas Gerais', 'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná',
+                'PE': 'Pernambuco', 'PI': 'Piauí', 'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte',
+                'RS': 'Rio Grande do Sul', 'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina',
+                'SP': 'São Paulo', 'SE': 'Sergipe', 'TO': 'Tocantins'
+            };
+
             cepInput.addEventListener('blur', function () {
-                // Limpa e formata o CEP para conter apenas números
                 const cep = this.value.replace(/\D/g, '');
 
-                // Verifica se o CEP tem o tamanho correto (8 dígitos)
                 if (cep.length === 8) {
-                    // Mostra uma mensagem de "a carregar"
                     logradouroInput.value = 'Buscando...';
                     bairroInput.value = 'Buscando...';
                     cidadeInput.value = 'Buscando...';
                     ufInput.value = '...';
+                    estadoInput.value = 'Buscando...';
+                    paisInput.value = 'Buscando...';
 
-                    // Faz a chamada à API do ViaCEP
                     fetch(`https://viacep.com.br/ws/${cep}/json/`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.erro) {
-                                // Se o CEP não for encontrado, limpa os campos
                                 alert('CEP não encontrado.');
                                 logradouroInput.value = '';
                                 bairroInput.value = '';
                                 cidadeInput.value = '';
                                 ufInput.value = '';
+                                estadoInput.value = '';
+                                paisInput.value = '';
                             } else {
-                                // Se o CEP for encontrado, preenche os campos
                                 logradouroInput.value = data.logradouro;
                                 bairroInput.value = data.bairro;
                                 cidadeInput.value = data.localidade;
                                 ufInput.value = data.uf;
-
-                                // Coloca o foco no campo de número para o utilizador preencher
+                                estadoInput.value = ufParaEstado[data.uf] || '';
+                                paisInput.value = 'Brasil';
                                 numeroInput.focus();
                             }
                         })
@@ -175,8 +193,35 @@
                             bairroInput.value = '';
                             cidadeInput.value = '';
                             ufInput.value = '';
+                            estadoInput.value = '';
+                            paisInput.value = '';
                         });
                 }
+            });
+
+            cnpjInput.addEventListener('input', function (e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, ''); 
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                e.target.value = value;
+            });
+
+            telefoneInput.addEventListener('input', function (e) {
+                let value = e.target.value;
+                value = value.replace(/\D/g, '');
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d{5})(\d{4})$/, '$1-$2');
+                value = value.replace(/(\d{4})(\d{4})$/, '$1-$2'); 
+                e.target.value = value.slice(0, 15);
+            });
+
+            nomeUnidadeInput.addEventListener('input', function (e) {
+                let value = e.target.value;
+                value = value.replace(/[0-9]/g, ''); 
+                e.target.value = value;
             });
         });
     </script>

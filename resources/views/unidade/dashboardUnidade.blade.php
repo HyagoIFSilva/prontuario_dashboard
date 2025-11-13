@@ -10,18 +10,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{{-- NOTA: O bloco PHP para dados dos gráficos foi omitido aqui para concisão, mas deve estar no seu arquivo. --}}
 @php 
-    // Variáveis de exemplo (devem vir do seu backend)
-    $medicosCount = 15;
-    $nursesCount = 20;
-    $patientsCount = 10; // Usado para recepcionistas neste contexto
-    $dadosGenero = ['Homens' => 45, 'Mulheres' => 55];
-    $medicosPorEspecialidade = collect([
-        (object)['especialidadeMedico' => 'Cardio', 'total' => 12],
-        (object)['especialidadeMedico' => 'Pediatria', 'total' => 8],
-    ]);
-    $dadosLinha = ['meses' => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'], 'pacientes' => [45, 52, 61, 58, 70, 78]];
+    // Variáveis de exemplo (substituídas pelo Controller)
+    // $medicosCount = 15;
+    // $nursesCount = 20;
+    // $recepcionistasCount = 10; 
+    // $dadosGenero = ['Homens' => 45, 'Mulheres' => 55];
+    // $medicosPorEspecialidade = collect([
+    //     (object)['especialidadeMedico' => 'Cardio', 'total' => 12],
+    //     (object)['especialidadeMedico' => 'Pediatria', 'total' => 8],
+    // ]);
+    // $dadosLinha = ['meses' => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'], 'pacientes' => [45, 52, 61, 58, 70, 78]];
 @endphp
 
 <div class="dashboard-container">
@@ -47,8 +46,8 @@
                 <img src="{{ asset('img/unidade-logo2.png') }}" alt="Logo Prontuário+" class="banner-logo">
             </div>
             <div class="banner-center">
-                <h2>Bem-vindo(a),<span class="highlight">{{ $nomeUnidade ?? 'Usuário' }}</span></h2>
-
+                {{-- Usa a variável $nomeUnidade enviada pelo Controller --}}
+                <h2>Bem-vindo(a),<span class="highlight">{{ $nomeUnidade ?? 'Usuário' }}</span></h2> 
                 <p><i class="bi bi-heart-pulse"></i> O Prontuário+ fica feliz com a sua presença e dedicação à saúde.</p>
             </div>
             <div class="banner-right">
@@ -78,23 +77,31 @@
             </div>
         </div>
 
+        {{-- ============================================= --}}
+        {{-- --- CORREÇÃO AQUI --- --}}
+        {{-- ============================================= --}}
         <div class="metric-card slide-up" style="animation-delay: 0.4s;">
             <div class="metric-icon purple">
                 <i class="bi bi-person-check"></i>
             </div>
             <div class="metric-content">
                 <span class="metric-label">Recepcionistas Cadastrados</span>
-                <strong class="metric-value">{{ $patientsCount ?? 0 }}</strong>
+                {{-- Trocado de $patientsCount para $recepcionistasCount --}}
+                <strong class="metric-value">{{ $recepcionistasCount ?? 0 }}</strong>
             </div>
         </div>
 
+        {{-- ============================================= --}}
+        {{-- --- CORREÇÃO AQUI --- --}}
+        {{-- ============================================= --}}
         <div class="metric-card slide-up" style="animation-delay: 0.5s;">
             <div class="metric-icon orange">
                 <i class="bi bi-people-fill"></i>
             </div>
             <div class="metric-content">
                 <span class="metric-label">Total de Profissionais</span>
-                <strong class="metric-value">{{ ($medicosCount ?? 0) + ($nursesCount ?? 0) + ($patientsCount ?? 0) }}</strong>
+                {{-- Trocado de $patientsCount para $recepcionistasCount --}}
+                <strong class="metric-value">{{ ($medicosCount ?? 0) + ($nursesCount ?? 0) + ($recepcionistasCount ?? 0) }}</strong>
             </div>
         </div>
     </div>
@@ -218,15 +225,16 @@
     // === Gráfico de Especialidades ===
     const ctxEspecialidade = document.getElementById('graficoEspecialidades');
     if (ctxEspecialidade) {
+        // Usa a variável real $medicosPorEspecialidade do controller
         const especialidadesData = @json($medicosPorEspecialidade);
         
         const labels = especialidadesData.length > 0 
             ? especialidadesData.map(item => item.especialidadeMedico)
-            : ['Cardiologia', 'Pediatria', 'Ortopedia', 'Clínico Geral', 'Ginecologia'];
+            : ['Sem Dados'];
         
         const data = especialidadesData.length > 0 
             ? especialidadesData.map(item => item.total)
-            : [12, 8, 6, 15, 10];
+            : [1]; // Mostra 1 para não ficar vazio
 
         new Chart(ctxEspecialidade, {
             type: 'bar',
@@ -283,15 +291,16 @@
     // === Gráfico de Crescimento (Linha) ===
     const ctxLinha = document.getElementById('graficoLinha');
     if (ctxLinha) {
+        // Usa a variável real $dadosLinha do controller
         const dadosLinha = @json($dadosLinha);
         
         const meses = dadosLinha.meses.length > 0 
             ? dadosLinha.meses 
-            : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            : ['N/A'];
         
         const pacientes = dadosLinha.pacientes.length > 0 
             ? dadosLinha.pacientes 
-            : [45, 52, 61, 58, 70, 78, 85, 92, 88, 95, 102, 110];
+            : [0];
 
         new Chart(ctxLinha, {
             type: 'line',
@@ -351,8 +360,9 @@
     // === Gráfico de Gênero (Donut) ===
     const ctxGenero = document.getElementById('graficoDonutGenero');
     if (ctxGenero) {
-        const homens = {{ $dadosGenero['Homens'] ?? 45 }};
-        const mulheres = {{ $dadosGenero['Mulheres'] ?? 55 }};
+        // Usa a variável real $dadosGenero do controller
+        const homens = {{ $dadosGenero['Homens'] ?? 0 }};
+        const mulheres = {{ $dadosGenero['Mulheres'] ?? 0 }};
 
         new Chart(ctxGenero, {
             type: 'doughnut',
@@ -378,6 +388,7 @@
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                if (total === 0) return context.label + ': 0 (0%)'; // Evita divisão por zero
                                 const percentage = ((context.parsed / total) * 100).toFixed(1);
                                 return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                             }
@@ -391,18 +402,14 @@
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Seleciona todos os elementos com as classes de animação
         const animatedElements = document.querySelectorAll('.slide-up, .fade-in, .zoom-in');
 
         animatedElements.forEach(element => {
             const delay = parseFloat(element.style.animationDelay) * 1000 || 0;
 
             setTimeout(() => {
-       
                 element.style.opacity = '1'; 
                 element.style.transform = 'translateY(0) scale(1)';
-
-       
             }, delay);
         });
     });

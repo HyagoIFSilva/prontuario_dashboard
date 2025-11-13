@@ -245,3 +245,36 @@ h2 {
     margin-top: -40px;
   }
 }
+
+.input-group .input-select {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 1rem;
+    color: var(--text-muted); /* Começa cinza */
+    background: var(--bg-gray-50);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    font-family: inherit;
+    line-height: 1.5;
+    cursor: pointer;
+
+    
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+   
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    background-size: 1.25em 1.25em;
+    
+    padding-right: 48px; 
+}
+
+
+.input-group .input-select:valid {
+    color: var(--text-primary);
+}

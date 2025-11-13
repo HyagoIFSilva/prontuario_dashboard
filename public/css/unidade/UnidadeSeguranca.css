@@ -657,3 +657,26 @@ body {
         margin-right: 15px;
     }
 }
+ .form-group .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .form-group .input-wrapper input {
+        width: 100%;
+        /* Garante espaço para o ícone */
+        padding-right: 45px !important; 
+    }
+    /* Estilo para o ícone do olho */
+    .form-group .icon-right-pass {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6B7280; /* Cor secundária (cinza) */
+        font-size: 1.1rem;
+    }
+    .form-group .icon-right-pass:hover {
+        color: #111827; /* Cor primária (preto) */
+    }
