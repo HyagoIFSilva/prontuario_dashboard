@@ -43,7 +43,7 @@ return new class extends Migration
             $table->softDeletes();
 
             
-            $table->unique(['idConsultaFK', 'descExame', 'dataExame']);
+            // $table->unique(['idConsultaFK', 'descExame', 'dataExame']);
         });
     }
 

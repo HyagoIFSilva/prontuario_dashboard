@@ -178,21 +178,14 @@ Route::middleware('auth:medico')->prefix('medico')->name('medico.')->group(funct
     Route::delete('/prontuario/deletar/{id}', [MedicoProntuarioController::class, 'destroy'])->name('prontuario.destroy');
     Route::get('/visualizar-prontuario/{id}', [MedicoProntuarioController::class, 'show'])->name('visualizarProntuario');
     Route::get('/prontuario/{id}', [MedicoProntuarioController::class, 'show'])->name('paciente.prontuario');
+
+
+    Route::get('/pdf/exames/{idConsulta}', [MedicoPdfController::class, 'gerarPdfExames'])->name('pdf.exames');
+    Route::get('/pdf/receita/{idConsulta}', [MedicoPdfController::class, 'gerarPdfReceita'])->name('pdf.receita');
+
 });
 
 
-// ===================================================================================
-// --- ROTAS DE PDF DO MÉDICO (CORRIGIDAS) ---
-// ===================================================================================
-
-Route::middleware('auth:medico')->prefix('medico')->group(function () {
-     
-    Route::get('/pdf-exames/{idConsulta}', [MedicoPdfController::class, 'gerarPdfExames'])
-         ->name('gerarPdfExames');
-         
-    Route::get('/consulta/{idConsulta}/receita/pdf', [MedicoPdfController::class, 'gerarPdfReceita'])
-         ->name('consulta.receita.pdf');
-});
 
 // ===================================================================================
 // --- ROTAS PROTEGIDAS DO ENFERMEIRO ---

@@ -78,7 +78,7 @@
                                             <a href="{{ route('medico.prontuario.edit', $consulta->idConsultaPK) }}"
                                                class="btn-action btn-atender"
                                                title="Atender Paciente">
-                                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                               <i class="bi bi-person-plus-fill"></i>
                                             </a>
                                             <a href="{{ route('medico.visualizarProntuario', $consulta->paciente->idPaciente) }}"
                                                class="btn-action btn-view"

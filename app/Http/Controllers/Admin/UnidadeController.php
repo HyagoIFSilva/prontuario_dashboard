@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Mail\UnidadeAccessCredentials;
-use Illuminate\Validation\Rule; 
+use Illuminate\Validation\Rule;
 
 class UnidadeController extends Controller
 {
@@ -24,7 +24,7 @@ class UnidadeController extends Controller
     public function index()
     {
         // Obtém todas as unidades para exibição
-        $unidades = Unidade::all(); 
+        $unidades = Unidade::all();
         return view('admin.manutencaoUnidades', compact('unidades'));
     }
 
@@ -51,9 +51,9 @@ class UnidadeController extends Controller
                 'nomeUnidade' => 'required|string|max:255',
                 'cnpjUnidade' => ['required', 'string', 'regex:/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/', Rule::unique('tbUnidade', 'cnpjUnidade')],
                 'emailUnidade' => ['required', 'email', 'max:255', Rule::unique('tbUnidade', 'emailUnidade')],
-                'telefoneUnidade' => 'nullable|string|max:20', 
-                'tipoUnidade' => 'nullable|string|max:100', 
-                
+                'telefoneUnidade' => 'nullable|string|max:20',
+                'tipoUnidade' => 'nullable|string|max:100',
+
                 'cepUnidade' => 'required|string|max:9',
                 'logradouroUnidade' => 'required|string|max:255',
                 'numLogradouroUnidade' => 'required|string|max:20',
@@ -72,7 +72,7 @@ class UnidadeController extends Controller
             ]);
 
             DB::beginTransaction();
-            
+
             // Lógica de criação da unidade usando atribuição manual
             $senhaTemporaria = Str::random(10);
 
@@ -83,7 +83,7 @@ class UnidadeController extends Controller
             $unidade->emailUnidade = $request->emailUnidade;
             $unidade->telefoneUnidade = $request->telefoneUnidade;
             $unidade->tipoUnidade = $request->tipoUnidade;
-            
+
             // Campos de endereço
             $unidade->cepUnidade = $request->cepUnidade;
             $unidade->logradouroUnidade = $request->logradouroUnidade;
@@ -94,27 +94,28 @@ class UnidadeController extends Controller
             $unidade->estadoUnidade = $request->estadoUnidade;
             $unidade->paisUnidade = $request->paisUnidade;
 
-        
-            $unidade->statusAtivoUnidade = $request->input('statusAtivoUnidade', true); 
+
+            $unidade->statusAtivoUnidade = $request->input('statusAtivoUnidade', true);
             $unidade->senhaUnidade = Hash::make($senhaTemporaria);
 
-        
 
-            $unidade->save(); 
+
+            $unidade->save();
 
             $credentials = [
-                'login' => $unidade->cnpjUnidade, 
-                'password' => $senhaTemporaria, 
+                'login' => $unidade->cnpjUnidade,
+                'password' => $senhaTemporaria,
                 'unidadeNome' => $unidade->nomeUnidade
             ];
-            
+
             Mail::to($unidade->emailUnidade)->send(new \App\Mail\EmailUnidade($unidade, $senhaTemporaria));
             
+
             DB::commit();
 
             return redirect()->route('admin.unidades.index')
                 ->with('success', 'Unidade cadastrada com sucesso! A senha foi enviada por e-mail para ' . $unidade->emailUnidade . '.');
-            
+
         } catch (ValidationException $e) {
             DB::rollBack();
             return back()->withErrors($e->errors())->withInput();
@@ -124,7 +125,7 @@ class UnidadeController extends Controller
             return back()->with('error', 'Erro ao cadastrar unidade ou enviar e-mail. Detalhes: ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Mostra o formulário de edição de unidade.
      *
@@ -151,7 +152,7 @@ class UnidadeController extends Controller
             'emailUnidade' => ['required', 'email', 'max:255', Rule::unique('tbUnidade', 'emailUnidade')->ignore($unidade->idUnidadePK, 'idUnidadePK')],
             'telefoneUnidade' => 'nullable|string|max:20',
             'tipoUnidade' => 'nullable|string|max:100',
-            
+
             'cepUnidade' => 'required|string|max:9',
             'logradouroUnidade' => 'required|string|max:255',
             'numLogradouroUnidade' => 'required|string|max:20',
@@ -177,9 +178,9 @@ class UnidadeController extends Controller
         ]);
 
         try {
-       
+
             $unidadeData = $validatedData;
-            
+
             $unidade->update($unidadeData);
 
             return redirect()->route('admin.unidades.index')
@@ -223,7 +224,7 @@ class UnidadeController extends Controller
     public function toggleStatus($id)
     {
         try {
-            $unidade = Unidade::findOrFail($id); 
+            $unidade = Unidade::findOrFail($id);
             $unidade->statusAtivoUnidade = !$unidade->statusAtivoUnidade;
             $unidade->save();
 
