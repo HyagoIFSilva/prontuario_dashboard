@@ -3,7 +3,6 @@
 @section('title', isset($consulta) ? 'Finalizar Atendimento' : 'Cadastrar Consulta')
 
 @section('content')
-
 <link rel="stylesheet" href="{{ asset('css/medico/cadastrarProntuario.css') }}">
 
 <main class="main-dashboard">
@@ -109,24 +108,23 @@
 
             <div class="form-section-title">Dados da Consulta Médica</div>
 
-             {{-- Campo Data e Hora --}}
+            {{-- Campo Data e Hora --}}
             <div class="input-group">
                 <label for="data_hora">
-                    <i class="bi bi-calendar-check"></i> Data e Hora do Registro 
+                    <i class="bi bi-calendar-check"></i> Data e Hora do Registro
                 </label>
-                <input 
-                    type="datetime-local" 
-                    id="dataConsulta" 
-                    name="dataConsulta" 
+                <input
+                    type="datetime-local"
+                    id="dataConsulta"
+                    name="dataConsulta"
                     value="{{ old('dataConsulta', \Carbon\Carbon::now()->format('Y-m-d\TH:i')) }}"
                     required
-                    class="input-datetime"
-                >
+                    class="input-datetime">
                 @error('data_hora')
-                    <span class="error">{{ $message }}</span>
+                <span class="error">{{ $message }}</span>
                 @enderror
             </div>
-            
+
             <div class="input-group">
                 <label for="observacoes">
                     <i class="bi bi-file-text"></i> Observações Médicas / Diagnóstico
@@ -222,6 +220,7 @@
                 <span class="error">{{ $message }}</span>
                 @enderror
             </div>
+
             {{-- MEDICAMENTOS COM CHECKBOX E DETALHES --}}
             <div class="input-group">
                 <label>
@@ -292,13 +291,16 @@
                 <span class="error">{{ $message }}</span>
                 @enderror
             </div>
+            <!-- Hidden para gravar na tbConsulta -->
+            <input type="hidden" id="examesSolicitadosHidden" name="examesSolicitados">
+            <input type="hidden" id="medicamentosPrescritosHidden" name="medicamentosPrescritos">
+
 
             {{-- BOTÕES DE AÇÃO --}}
             <div class="button-group">
                 <a href="{{ route('medico.prontuario') }}" class="btn-cancelar">
                     <i class="bi bi-x-circle"></i> {{ isset($consulta) ? 'Voltar para Fila' : 'Cancelar' }}
                 </a>
-
 
                 {{-- BOTÃO ALTERADO PARA ABRIR O MODAL DE CONFIRMAÇÃO --}}
                 <button type="button" class="save-button" onclick="openConfirmModal()">
@@ -326,107 +328,69 @@
     </div>
 </div>
 
-
 <script>
-
-    function showNotification(message, type) {
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-            document.body.removeChild(existingNotification);
-        }
-
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-        <div class="notification-content">
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 100);
-
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
-    }
-
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('pdfOptionsModal');
-        if (modal && event.target === modal) {
-            closePdfModal();
-        }
-    });
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closePdfModal();
-        }
-    });
-
-    // ===== FUNÇÕES DO MODAL DE CONFIRMAÇÃO =====
-    function openConfirmModal() {
-        const modal = document.getElementById('confirmModal');
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function closeConfirmModal() {
-        const modal = document.getElementById('confirmModal');
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    }
-
-    function submitForm() {
-        closeConfirmModal();
-        document.getElementById('prontuarioForm').submit();
-    }
-
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('confirmModal');
-        if (modal && event.target === modal) {
-            closeConfirmModal();
-        }
-    });
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeConfirmModal();
-        }
-    });
-
-    // ===== FUNÇÕES PARA DETALHES DE EXAMES E MEDICAMENTOS =====
-    function toggleExameDetails(exame, isChecked) {
-        const detailsId = 'exame-details-' + exame.replace(/\s+/g, '-');
-        const detailsElement = document.getElementById(detailsId);
-
-        if (detailsElement) {
-            detailsElement.style.display = isChecked ? 'block' : 'none';
-        }
-    }
-
-    function toggleMedicamentoDetails(medicamento, isChecked) {
-        const detailsId = 'medicamento-details-' + medicamento.replace(/\s+/g, '-');
-        const detailsElement = document.getElementById(detailsId);
-
-        if (detailsElement) {
-            detailsElement.style.display = isChecked ? 'block' : 'none';
-        }
-    }
-
-    // ===== CÓDIGO EXISTENTE E LISTENERS PARA ATUALIZAÇÃO =====
     document.addEventListener('DOMContentLoaded', function() {
+        // ===== FUNÇÕES DO MODAL DE CONFIRMAÇÃO =====
+        window.openConfirmModal = function() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        window.closeConfirmModal = function() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        window.submitForm = function() {
+
+            // Montar EXAMES
+            const examesSelecionados = [];
+            document.querySelectorAll('input[name="exames_solicitados[]"]:checked')
+                .forEach(ex => examesSelecionados.push(ex.value));
+
+            document.getElementById('examesSolicitadosHidden').value =
+                examesSelecionados.join("\n");
+
+
+            // Montar MEDICAMENTOS
+            const medicamentosSelecionados = [];
+            document.querySelectorAll('input[name="medicamentos_prescritos[]"]:checked')
+                .forEach(md => medicamentosSelecionados.push(md.value));
+
+            document.getElementById('medicamentosPrescritosHidden').value =
+                medicamentosSelecionados.join("\n");
+
+
+            // Enviar normalmente
+            closeConfirmModal();
+            document.getElementById('prontuarioForm').submit();
+        }
+
+
+        // ===== FUNÇÕES PARA DETALHES DE EXAMES E MEDICAMENTOS =====
+        window.toggleExameDetails = function(exame, isChecked) {
+            const detailsId = 'exame-details-' + exame.replace(/\s+/g, '-');
+            const detailsElement = document.getElementById(detailsId);
+
+            if (detailsElement) {
+                detailsElement.style.display = isChecked ? 'block' : 'none';
+            }
+        }
+
+        window.toggleMedicamentoDetails = function(medicamento, isChecked) {
+            const detailsId = 'medicamento-details-' + medicamento.replace(/\s+/g, '-');
+            const detailsElement = document.getElementById(detailsId);
+
+            if (detailsElement) {
+                detailsElement.style.display = isChecked ? 'block' : 'none';
+            }
+        }
 
         // ===== FILTROS =====
         const filtroMedicamentos = document.getElementById('filtroMedicamentos');
@@ -451,7 +415,6 @@
             });
         }
 
-
         // Inicializa detalhes de exames e medicamentos marcados (se houver)
         const examesMarcados = document.querySelectorAll('input[name="exames_solicitados[]"]:checked');
         examesMarcados.forEach(checkbox => {
@@ -463,9 +426,21 @@
             toggleMedicamentoDetails(checkbox.value, true);
         });
 
+        // Event listeners para fechar modal
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (modal && event.target === modal) {
+                closeConfirmModal();
+            }
+        });
 
-        console.log('✅ Sistema de Prontuário e PDF customizado carregados com sucesso!');
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeConfirmModal();
+            }
+        });
+
+        console.log('✅ Sistema de Prontuário carregado com sucesso!');
     });
 </script>
-
 @endsection
