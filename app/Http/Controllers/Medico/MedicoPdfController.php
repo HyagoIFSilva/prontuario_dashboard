@@ -36,10 +36,8 @@ class MedicoPdfController extends Controller
 
             $medicoInfo = $this->getMedicoData($consulta);
 
-            // Buscar exames da tabela tbExame usando a relação
             $exames = $consulta->exames;
             
-            // Formatar exames para exibição
             $examesFormatados = [];
             foreach ($exames as $exame) {
                 $exameInfo = $exame->nomeExame;
@@ -106,10 +104,8 @@ class MedicoPdfController extends Controller
 
             $medicoInfo = $this->getMedicoData($consulta);
 
-            // Buscar medicamentos da tabela tbMedicamento usando a relação
             $medicamentos = $consulta->medicamentos;
             
-            // Formatar medicamentos para exibição
             $medicamentosFormatados = [];
             foreach ($medicamentos as $med) {
                 $medInfo = "• {$med->nomeMedicamento}";

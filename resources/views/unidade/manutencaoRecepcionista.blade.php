@@ -9,7 +9,7 @@
 
 <main class="main-dashboard">
     <div class="recepcionista-container">
-        <!-- DASHBOARD DE MÉTRICAS -->
+
         <div class="metrics-dashboard">
             <div class="metric-card total">
                 <div class="metric-icon">
@@ -41,18 +41,9 @@
                 </div>
             </div>
 
-            <div class="metric-card new">
-                <div class="metric-icon">
-                    <i class="bi bi-star-fill"></i>
-                </div>
-                <div class="metric-info">
-                    <span class="metric-label">NOVOS ESTE MÊS</span>
-                    <span class="metric-value">{{ $recepcionistas->where('created_at', '>=', now()->startOfMonth())->count() }}</span>
-                </div>
-            </div>
         </div>
 
-        <!-- HEADER COM TÍTULO E AÇÕES -->
+
         <div class="recepcionista-header">
             <div class="header-title">
                 <h1><i class="bi bi-person-vcard"></i> Gerenciamento de Recepcionistas</h1>
@@ -60,16 +51,13 @@
             </div>
             
             <div class="header-actions">
-                <button onclick="exportToExcel()" class="btn-export" title="Exportar para Excel">
-                    <i class="bi bi-file-earmark-spreadsheet"></i> Exportar
-                </button>
                 <a href="{{ route('unidade.recepcionistas.create') }}" class="btn-add-recepcionista">
                     <i class="bi bi-plus-circle"></i> Cadastrar Recepcionista
                 </a>
             </div>
         </div>
 
-        <!-- FILTROS AVANÇADOS -->
+
         <div class="search-filters">
             <div class="search-box">
                 <i class="bi bi-search"></i>
@@ -102,7 +90,7 @@
             </button>
         </div>
 
-        <!-- VISUALIZAÇÃO EM LISTA -->
+
         <div class="box-table" id="listView">
             <table>
                 <thead>
@@ -145,7 +133,7 @@
                             @endif
                         </td>
                         <td class="actions">
-                            <button onclick="quickView({{ $recepcionista->idRecepcionistaPK }})" class="btn-action btn-view" title="Visualizar Rápido">
+                            <button onclick="quickView({{ $recepcionista->idRecepcionistaPK }}, event)" class="btn-action btn-view" title="Visualizar Rápido">
                                 <i class="bi bi-eye"></i>
                             </button>
                             
@@ -153,13 +141,17 @@
                                 <i class="bi bi-pencil"></i>
                             </a>
 
-                            <form action="{{ route('unidade.recepcionistas.destroy', $recepcionista->idRecepcionistaPK) }}" method="POST" style="display: inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-action btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este recepcionista?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <button onclick="openStatusModal('{{ $recepcionista->idRecepcionistaPK }}', '{{ $recepcionista->nomeRecepcionista }}', {{ $recepcionista->statusAtivoRecepcionista }}, event)" 
+                                    class="btn-action btn-toggle" 
+                                    title="{{ $recepcionista->statusAtivoRecepcionista == 1 ? 'Desativar' : 'Ativar' }}">
+                                @if($recepcionista->statusAtivoRecepcionista == 1)
+                                    <i class="bi bi-toggle-on text-success"></i>
+                                @else
+                                    <i class="bi bi-toggle-off text-danger"></i>
+                                @endif
+                            </button>
+
+                           
                         </td>
                     </tr>
                     @endforeach
@@ -176,7 +168,7 @@
             </table>
         </div>
 
-        <!-- VISUALIZAÇÃO EM CARDS -->
+
         <div class="grid-view" id="gridView" style="display: none;">
             @foreach ($recepcionistas as $recepcionista)
             <div class="recepcionista-card" data-status="{{ $recepcionista->statusAtivoRecepcionista == 1 ? 'ativo' : 'inativo' }}">
@@ -206,19 +198,22 @@
                 </div>
                 
                 <div class="card-actions">
-                    <button onclick="quickView({{ $recepcionista->idRecepcionistaPK }})" class="btn-action btn-view">
+                    <button onclick="quickView({{ $recepcionista->idRecepcionistaPK }}, event)" class="btn-action btn-view" title="Visualizar Rápido">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <a href="{{ route('unidade.recepcionistas.edit', $recepcionista->idRecepcionistaPK) }}" class="btn-action btn-edit">
+                    <a href="{{ route('unidade.recepcionistas.edit', $recepcionista->idRecepcionistaPK) }}" class="btn-action btn-edit" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </a>
-                    <form action="{{ route('unidade.recepcionistas.destroy', $recepcionista->idRecepcionistaPK) }}" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-action btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este recepcionista?')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
+                    
+                    <button onclick="openStatusModal('{{ $recepcionista->idRecepcionistaPK }}', '{{ $recepcionista->nomeRecepcionista }}', {{ $recepcionista->statusAtivoRecepcionista }}, event)" class="btn-action btn-toggle" title="{{ $recepcionista->statusAtivoRecepcionista == 1 ? 'Desativar' : 'Ativar' }}">
+                        @if($recepcionista->statusAtivoRecepcionista == 1)
+                            <i class="bi bi-toggle-on text-success"></i>
+                        @else
+                            <i class="bi bi-toggle-off text-danger"></i>
+                        @endif
+                    </button>
+                    
+                    
                 </div>
             </div>
             @endforeach
@@ -252,6 +247,26 @@
     </div>
 </div>
 
+{{-- MODAL DE ALTERAÇÃO DE STATUS --}}
+<div id="statusRecepcionistaModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <i class="bi bi-toggle-on"></i>
+            <h2>Alterar Status</h2>
+        </div>
+        
+        <p>Tem certeza que deseja <span id="statusAction"></span> o(a) recepcionista <strong><span id="statusRecepcionistaNome"></span></strong>?</p>
+
+        <form id="statusRecepcionistaForm" method="POST" action="{{ route('unidade.recepcionistas.toggleStatus', ':id:') }}">
+            @csrf
+            <div class="modal-buttons">
+                <button type="button" onclick="closeStatusModal()" class="btn-cancelar">Cancelar</button>
+                <button type="submit" class="btn-excluir">Sim, <span id="confirmStatusText"></span></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- MODAL DE SUCESSO --}}
 <div id="statusSuccessModal" class="modal-overlay">
     <div class="modal-content">
@@ -268,11 +283,11 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-    // ===== VARIÁVEIS GLOBAIS =====
+
     let currentView = 'list';
 
-    // ===== VISUALIZAÇÃO (LISTA/CARDS) =====
     function changeView(view) {
         currentView = view;
         const listView = document.getElementById('listView');
@@ -295,15 +310,15 @@
         }
     }
 
-    // ===== VISUALIZAÇÃO RÁPIDA =====
-    function quickView(recepcionistaId) {
+    function quickView(recepcionistaId, event) {
+        if (event) event.stopPropagation();
+        
         const modal = document.getElementById('quickViewModal');
         const content = document.getElementById('quickViewContent');
         
         modal.style.display = 'flex';
         content.innerHTML = '<div class="loading-spinner"><i class="bi bi-hourglass-spin"></i> Carregando...</div>';
         
-        // Busca dados do recepcionista via AJAX
         fetch(`/unidade/recepcionistas/${recepcionistaId}/quick-view`)
         .then(response => response.json())
         .then(data => {
@@ -315,28 +330,8 @@
                             <h3>${data.nome}</h3>
                             <p><i class="bi bi-envelope"></i> <strong>Email:</strong> ${data.email}</p>
                             <p><i class="bi bi-circle-fill ${data.status == 1 ? 'text-success' : 'text-danger'}"></i> <strong>Status:</strong> ${data.status == 1 ? 'Ativo' : 'Inativo'}</p>
-                            <p><i class="bi bi-calendar-plus"></i> <strong>Cadastrado em:</strong> ${data.created_at}</p>
                         </div>
                     </div>
-                    
-                    <div class="quick-view-stats">
-                        <div class="stat-item">
-                            <i class="bi bi-calendar-check"></i>
-                            <span class="stat-number">${data.atendimentos || 0}</span>
-                            <p>Atendimentos Realizados</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-clock-history"></i>
-                            <span class="stat-number">${data.horas_trabalhadas || 0}h</span>
-                            <p>Total de Horas</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-star-fill"></i>
-                            <span class="stat-number">${data.avaliacao || 'N/A'}</span>
-                            <p>Avaliação Média</p>
-                        </div>
-                    </div>
-                    
                     <div class="quick-view-actions">
                         <a href="/unidade/recepcionistas/${recepcionistaId}/edit" class="btn-quick-edit">
                             <i class="bi bi-pencil"></i> Editar Perfil Completo
@@ -355,22 +350,35 @@
         document.getElementById('quickViewModal').style.display = 'none';
     }
 
-    // ===== EXPORTAR PARA EXCEL =====
-    function exportToExcel() {
-        window.location.href = '/unidade/recepcionistas/export';
+    function openStatusModal(recepcionistaId, recepcionistaNome, currentStatus, event) {
+        if (event) event.stopPropagation();
+        
+        const modal = document.getElementById('statusRecepcionistaModal');
+        const form = document.getElementById('statusRecepcionistaForm');
+        const action = currentStatus == 1 ? 'desativar' : 'ativar';
+        
+        document.getElementById('statusRecepcionistaNome').textContent = recepcionistaNome;
+        document.getElementById('statusAction').textContent = action;
+        document.getElementById('confirmStatusText').textContent = action;
+        
+        form.action = form.action.replace(':id:', recepcionistaId);
+        modal.style.display = 'flex';
     }
 
-    // ===== ORDENAÇÃO =====
+    function closeStatusModal() {
+        document.getElementById('statusRecepcionistaModal').style.display = 'none';
+    }
+
+   
+
     let sortDirection = {};
     function sortTable(column) {
         const table = document.querySelector('#listView table');
         const tbody = table.querySelector('tbody');
         const rows = Array.from(tbody.querySelectorAll('tr:not([data-status="empty-list"])'));
         
-        // Inverte a direção se a mesma coluna for clicada novamente
         sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
         
-        // Ordena as linhas
         rows.sort((a, b) => {
             let aValue, bValue;
             
@@ -392,16 +400,13 @@
             }
         });
         
-        // Reinsere as linhas ordenadas na tabela
         rows.forEach(row => tbody.appendChild(row));
     }
 
-    // ===== FILTROS =====
     function filterRecepcionistas() {
         const searchInput = document.getElementById('searchInput').value.toLowerCase();
         const filterStatus = document.getElementById('filterStatus').value;
         
-        // Filtrar tabela
         document.querySelectorAll('#listView tbody tr').forEach(row => {
             if (row.dataset.status === 'empty-list') return;
             
@@ -415,7 +420,6 @@
             row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
         });
         
-        // Filtrar cards
         document.querySelectorAll('.recepcionista-card').forEach(card => {
             const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
             const email = card.querySelector('.card-email')?.textContent.toLowerCase() || '';
@@ -424,11 +428,10 @@
             const matchesSearch = name.includes(searchInput) || email.includes(searchInput);
             const matchesStatus = !filterStatus || status === filterStatus;
             
-            card.style.display = (matchesSearch && matchesStatus) ? 'block' : 'none';
+            card.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
         });
     }
 
-    // ===== MODAL DE SUCESSO =====
     function openSuccessModal(message) {
         document.getElementById('successMessage').textContent = message;
         document.getElementById('statusSuccessModal').style.display = 'flex';
@@ -439,7 +442,6 @@
         window.location.reload();
     }
 
-    // ===== CUSTOM SELECT =====
     function initializeCustomSelect(containerId) {
         const customSelect = document.getElementById(containerId);
         const selected = customSelect.querySelector(".selected");
@@ -469,7 +471,6 @@
         });
     }
 
-    // ===== EVENT LISTENERS =====
     document.addEventListener("DOMContentLoaded", () => {
         initializeCustomSelect("customStatus");
         
@@ -482,8 +483,14 @@
         if (e.target.id === 'quickViewModal') closeQuickView();
     });
 
+    document.getElementById('statusRecepcionistaModal').addEventListener('click', (e) => {
+        if (e.target.id === 'statusRecepcionistaModal') closeStatusModal();
+    });
+
     document.getElementById('statusSuccessModal').addEventListener('click', (e) => {
         if (e.target.id === 'statusSuccessModal') closeSuccessModal();
     });
 </script>
+
+@endpush
 @endsection

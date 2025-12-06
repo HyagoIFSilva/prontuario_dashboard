@@ -13,4 +13,10 @@ class Alergia extends Model
         'severidadeAlergia',
         'descAlergia',
     ];
+    
+    public function paciente()
+    {
+    return $this->belongsTo(Paciente::class, 'idPacienteFK', 'idPaciente');
+    }
 }
+

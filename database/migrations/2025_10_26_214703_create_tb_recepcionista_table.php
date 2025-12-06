@@ -13,16 +13,18 @@ return new class extends Migration
     {
         Schema::create('tbRecepcionista', function (Blueprint $table) {
             $table->id('idRecepcionistaPK');
+            $table->string('foto')->nullable();
             $table->string('nomeRecepcionista');
             $table->string('emailRecepcionista')->unique();
+            $table->string('genero')->nullable();
+
             $table->string('senhaRecepcionista');
-            
-            // --- CORREÇÃO (Voltando à sua lógica correta) ---
-            // Chave estrangeira para ligar à Unidade que o cadastrou
+            $table->boolean('statusAtivoRecepcionista')->default(1);
+
             $table->foreignId('idUnidadeFK')
-                  ->nullable() // Deixei nulo por segurança, mas pode ser obrigatório
-                  ->constrained('tbUnidade', 'idUnidadePK') // Assumindo PK da tbUnidade
-                  ->nullOnDelete(); // Se a unidade for deletada, o recepcionista fica "sem unidade"
+                  ->nullable() 
+                  ->constrained('tbUnidade', 'idUnidadePK')
+                  ->nullOnDelete();
             
             $table->timestamps(); 
             $table->softDeletes(); 
@@ -34,7 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Método robusto para apagar
         Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('tbRecepcionista');
         Schema::enableForeignKeyConstraints();

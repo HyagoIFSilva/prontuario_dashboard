@@ -13,10 +13,6 @@ class Medico extends Model
     protected $table = 'tbMedico';
     protected $primaryKey = 'idMedicoPK';
 
-    /**
-     * A CORREÇÃO ESTÁ AQUI:
-     * Esta linha diz ao Laravel para NÃO gerir as colunas created_at e updated_at.
-     */
     public $timestamps = false; 
 
     protected $fillable = [

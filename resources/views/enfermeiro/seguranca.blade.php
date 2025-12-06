@@ -32,11 +32,9 @@
             </div>
             @endif
 
-            {{-- Formulário com ID e botão modificado --}}
             <form id="securityForm" action="{{ route('enfermeiro.alterarSenha') }}" method="POST" class="security-form">
                 @csrf
                 
-                {{-- Senha Atual com Olhinho --}}
                 <div class="form-group">
                     <label for="senha_atual">Senha Atual:</label>
                     <div class="password-wrapper">
@@ -44,8 +42,7 @@
                         <i class="bi bi-eye toggle-password" onclick="togglePassword('senha_atual', this)"></i>
                     </div>
                 </div>
-
-                {{-- Nova Senha com Olhinho --}}
+            
                 <div class="form-group">
                     <label for="nova_senha">Nova Senha:</label>
                     <div class="password-wrapper">
@@ -55,7 +52,6 @@
                     <small class="form-hint">Mínimo de 8 caracteres.</small>
                 </div>
 
-                {{-- Confirmar Nova Senha com Olhinho --}}
                 <div class="form-group">
                     <label for="nova_senha_confirmation">Confirmar Nova Senha:</label>
                     <div class="password-wrapper">
@@ -64,7 +60,6 @@
                     </div>
                 </div>
 
-                {{-- BOTÃO FALTANDO ADICIONADO AQUI --}}
                 <button type="button" class="btn-primary" onclick="showConfirmationModal()">
                     Alterar Senha
                 </button>

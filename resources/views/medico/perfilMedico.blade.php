@@ -5,7 +5,6 @@
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/medico/perfilMedico.css') }}">
 
-{{-- 🔥 CORREÇÃO: Buscar o médico com o usuário relacionado --}}
 @php 
     $usuario = auth()->user();
     $medico = $usuario ? App\Models\Medico::with('usuario')->where('id_usuarioFK', $usuario->idUsuarioPK)->first() : null;
@@ -33,12 +32,10 @@
         </div>
     @endif
 
-    {{-- Formulário com ID para o JavaScript --}}
     <form id="profileForm" action="{{ route('medico.perfil.update') }}" method="POST" enctype="multipart/form-data">
       @csrf
       @method('PUT')
 
-      {{-- Bloco da Foto --}}
       <div class="foto-upload-container">
         <label for="foto" class="foto-upload-label">
           <div class="box-foto">
@@ -47,7 +44,6 @@
               alt="Foto atual">
           </div>
 
-          {{-- Overlay para Alterar Foto --}}
           <div class="overlay">
             <i class="bi bi-camera"></i>
             <span>Alterar Foto</span>
@@ -56,7 +52,6 @@
         <input type="file" id="foto" name="foto" accept="image/*" hidden onchange="previewFoto(event)">
       </div>
 
-      {{-- Campos de Dados --}}
       <div class="input-group">
         <input type="text" name="nomeMedico" id="nomeMedico" placeholder="Nome Completo"
                value="{{ old('nomeMedico', $medico->nomeMedico ?? '') }}" required>
@@ -67,25 +62,18 @@
                value="{{ $medico->crmMedico ?? '' }}" disabled title="Campo não editável">
       </div>
 
-      {{-- 🔥 MUDOU: emailUsuario em vez de emailMedico --}}
       <div class="input-group">
         <input type="email" name="emailUsuario" id="emailUsuario" placeholder="E-mail"
                value="{{ old('emailUsuario', $medico->usuario->emailUsuario ?? '') }}" required>
       </div>
 
-      {{-- Botões de Ação --}}
       <div class="button-group">
         <a href="{{ route('medico.seguranca') }}" class="btn-trocar-senha">Trocar Senha</a>
-        {{-- Botão alterado: type="button" e chama o modal --}}
         <button type="button" class="save-button" onclick="showConfirmationModal()">Salvar Alterações</button>
       </div>
     </form>
   </div>
 </main>
-
-{{-- ======================================================== --}}
-{{-- HTML DOS MODAIS ADICIONADO AQUI                     --}}
-{{-- ======================================================== --}}
 
 <div id="confirmationModal" class="modal-overlay">
     <div class="modal-box">
@@ -112,11 +100,8 @@
 </div>
 @endif
 
-{{-- ======================================================== --}}
-{{-- JAVASCRIPT DE CONTROLE (FOTO E MODAIS)              --}}
-{{-- ======================================================== --}}
 <script>
-// Função para preview da imagem
+
 function previewFoto(event) {
   const input = event.target;
   const preview = document.getElementById('preview-img');
@@ -130,12 +115,10 @@ function previewFoto(event) {
   }
 }
 
-// Pega os elementos do DOM para os modais
 const profileForm = document.getElementById('profileForm');
 const confirmationModal = document.getElementById('confirmationModal');
 const successModal = document.getElementById('successModal');
 
-// --- Funções para o Modal de Confirmação ---
 function showConfirmationModal() {
     if (confirmationModal) confirmationModal.classList.add('show');
 }
@@ -149,12 +132,10 @@ function submitProfileForm() {
     if (profileForm) profileForm.submit();
 }
 
-// --- Funções para o Modal de Sucesso ---
 function hideSuccessModal() {
     if (successModal) successModal.classList.remove('show');
 }
 
-// Opcional: Fechar o modal clicando fora da caixa
 window.onclick = function(event) {
     if (event.target == confirmationModal) {
         hideConfirmationModal();

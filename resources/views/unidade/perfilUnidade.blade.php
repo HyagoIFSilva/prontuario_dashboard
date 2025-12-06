@@ -16,22 +16,14 @@
             <h1>Perfil da Unidade</h1>
         </div>
 
-        {{-- ============================================= --}}
-        {{-- --- FORMULÁRIO ATUALIZADO (com ID) --- --}}
-        {{-- ============================================= --}}
         <form action="{{ route('unidade.perfil.update') }}" method="POST" enctype="multipart/form-data" id="profileForm">
             @csrf
             @method('PUT') 
 
-            {{-- Bloco da Foto --}}
             <div class="foto-upload-container">
                 <label for="foto" class="foto-upload-label">
 
                     <div class="box-foto">
-                        {{-- ============================================= --}}
-                        {{-- --- CORREÇÃO AQUI (Carregamento da Foto) --- --}}
-                        {{-- Busca a foto direto da $unidade->foto --}}
-                        {{-- ============================================= --}}
                         <img id="preview-img"
                              src="{{ $unidade->foto ? asset('storage/' . $unidade->foto) : asset('img/usuario-de-perfil.png') }}"
                              alt="Foto atual">
@@ -55,7 +47,7 @@
 
             <div class="button-group">
                 <a href="{{ route('unidade.seguranca') }}" class="btn-trocar-senha">Trocar Senha</a>
-                {{-- Botão "Salvar" agora abre o modal --}}
+        
                 <button type="button" class="save-button" id="openConfirmationModal">Salvar Alterações</button>
             </div>
         </form>
@@ -63,11 +55,6 @@
     </div>
 </main>
 
-{{-- ============================================ --}}
-{{-- --- HTML DOS MODAIS ADICIONADO --- --}}
-{{-- ============================================ --}}
-
-{{-- MODAL DE CONFIRMAÇÃO (Salvar Perfil) --}}
 <div id="confirmationModal" class="modal-overlay">
     <div class="modal-box">
         <i class="bi bi-exclamation-triangle-fill modal-icon icon-warning"></i>
@@ -80,7 +67,6 @@
     </div>
 </div>
 
-{{-- MODAL DE SUCESSO (Substitui o redirect do JS) --}}
 @if(session('success'))
 <div id="successModal" class="modal-overlay show">
     <div class="modal-box">
@@ -120,10 +106,6 @@
 </div>
 @endif
 
-
-{{-- ============================================ --}}
-{{-- --- SCRIPT ATUALIZADO (Com Lógica de Modal) --- --}}
-{{-- ============================================ --}}
 <script>
     // Função de preview (seu código original, mantido)
     function previewFoto(event) {

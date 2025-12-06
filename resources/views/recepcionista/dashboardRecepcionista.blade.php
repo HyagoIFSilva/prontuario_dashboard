@@ -12,7 +12,7 @@
                     <img src="{{ asset('img/recepcionista-logo2.png') }}" class="banner-logo-rec" alt="Logo">
                 </div>
                 <div class="banner-center-rec">
-                    <h2>Olá, <span class="name-rec">{{ Auth::user()->name ?? 'Recepcionista' }}</span>! 👋</h2>
+                    <h2>Olá, <span class="name-rec">{{ Auth::user()->nomeRecepcionista ?? 'Recepcionista' }}</span>! 👋</h2>
                     <p>Inicie um novo atendimento preenchendo os dados abaixo</p>
                 </div>
                 <div class="banner-right-rec">
@@ -40,7 +40,7 @@
                 </div>
             @endif
 
-            {{-- Progress Indicator --}}
+            {{-- Progress Indicator (Etapa 'Unidade' removida) --}}
             <div class="progress-container mb-4">
                 <div class="progress-step active" id="step-1">
                     <div class="step-number">1</div>
@@ -49,11 +49,6 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" id="step-2">
                     <div class="step-number">2</div>
-                    <div class="step-label">Unidade</div>
-                </div>
-                <div class="progress-line"></div>
-                <div class="progress-step" id="step-3">
-                    <div class="step-number">3</div>
                     <div class="step-label">Queixa</div>
                 </div>
             </div>
@@ -81,10 +76,10 @@
                                     <i class="bi bi-search"></i>
                                 </span>
                                 <input type="text" 
-                                       id="busca_paciente" 
-                                       class="form-control" 
-                                       placeholder="Digite 3 ou mais letras para buscar..." 
-                                       autocomplete="off">
+                                            id="busca_paciente" 
+                                            class="form-control" 
+                                            placeholder="Digite 3 ou mais letras para buscar..." 
+                                            autocomplete="off">
                             </div>
                             
                             <div id="resultados_busca_paciente" class="list-group mt-2"></div>
@@ -120,48 +115,15 @@
                     </div>
                 </div>
 
-                {{-- Cards 2 e 3 aparecem após selecionar paciente --}}
+                {{-- O passo 2 agora é o de Queixa Principal --}}
                 <div id="passo_2_acolhimento" style="display: none;">
                     
-                    {{-- Card 2: Unidade --}}
+                    {{-- Card 2: Queixa Principal (Antigo Card 3) --}}
                     <div class="card mb-4 shadow-sm step-card" data-step="2">
                         <div class="card-header">
                             <h4 class="mb-0">
-                                <i class="bi bi-hospital me-2"></i>
-                                2. Unidade de Atendimento
-                            </h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="unidade_id" class="form-label fs-5">
-                                    <i class="bi bi-geo-alt me-2"></i>
-                                    Selecione a Unidade:
-                                </label>
-                                <select name="unidade_id" 
-                                        id="unidade_id" 
-                                        class="form-select form-select-lg" 
-                                        required>
-                                    <option value="" disabled selected>Escolha uma unidade...</option>
-                                    @foreach($unidades as $unidade)
-                                        <option value="{{ $unidade->idUnidadePK }}">
-                                            {{ $unidade->nomeUnidade }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="form-text mt-2">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Selecione a unidade onde o atendimento será realizado
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Card 3: Queixa Principal --}}
-                    <div class="card mb-4 shadow-sm step-card" data-step="3">
-                        <div class="card-header">
-                            <h4 class="mb-0">
                                 <i class="bi bi-clipboard2-pulse me-2"></i>
-                                3. Queixa Principal
+                                2. Queixa Principal
                             </h4>
                         </div>
                         <div class="card-body">
@@ -171,11 +133,11 @@
                                     Queixa Principal / Motivo da Visita:
                                 </label>
                                 <textarea name="queixa_principal" 
-                                          id="queixa_principal" 
-                                          class="form-control" 
-                                          rows="5" 
-                                          placeholder="Descreva detalhadamente o que o paciente está sentindo ou o motivo da consulta..." 
-                                          required></textarea>
+                                            id="queixa_principal" 
+                                            class="form-control" 
+                                            rows="5" 
+                                            placeholder="Descreva detalhadamente o que o paciente está sentindo ou o motivo da consulta..." 
+                                            required></textarea>
                                 <div class="form-text mt-2">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Seja o mais específico possível para auxiliar a equipe de triagem
@@ -216,17 +178,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultadosDiv = document.getElementById('resultados_busca_paciente');
     const pacienteIdInput = document.getElementById('paciente_id');
     const infoPacienteDiv = document.getElementById('paciente_selecionado_info');
-    const passo2Div = document.getElementById('passo_2_acolhimento');
+    // passo2Div agora mostra o card de Queixa diretamente após selecionar o paciente
+    const passo2Div = document.getElementById('passo_2_acolhimento'); 
     const btnAlterarPaciente = document.getElementById('btnAlterarPaciente');
     const queixaTextarea = document.getElementById('queixa_principal');
     const charCount = document.getElementById('char_count');
     const formAcolhimento = document.getElementById('formAcolhimento');
-    const unidadeSelect = document.getElementById('unidade_id');
+    // Removida: const unidadeSelect = document.getElementById('unidade_id'); 
     
-    // Progress Steps
+    // Progress Steps (Atualizado)
     const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-    const step3 = document.getElementById('step-3');
+    // step2 agora é a Queixa Principal (antigo step 3)
+    const step2 = document.getElementById('step-2'); 
+    // Removida: const step3 = document.getElementById('step-3');
+    // progressLines agora só terá 1 linha de conexão
     const progressLines = document.querySelectorAll('.progress-line');
 
     const urlBusca = "{{ route('recepcionista.pacientes.buscar') }}";
@@ -340,14 +305,15 @@ document.addEventListener('DOMContentLoaded', function() {
         campoBusca.value = '';
         campoBusca.disabled = true;
 
-        // Update progress
+        // Update progress (Pula a etapa 2 de Unidade)
         step1.classList.add('completed');
-        step2.classList.add('active');
-        progressLines[0].classList.add('completed');
+        step2.classList.add('active'); // O step 2 agora é Queixa
+        // A primeira (e única) linha de progresso fica completa
+        progressLines[0].classList.add('completed'); 
 
         passo2Div.style.display = 'block';
         
-        // Scroll suave até o próximo card
+        // Scroll suave até o próximo card (agora é o card 2)
         setTimeout(() => {
             document.querySelector('.step-card[data-step="2"]').scrollIntoView({ 
                 behavior: 'smooth', 
@@ -366,28 +332,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset progress
         step1.classList.remove('completed');
-        step2.classList.remove('active', 'completed');
-        step3.classList.remove('active', 'completed');
+        step2.classList.remove('active', 'completed'); // step2 agora é Queixa
         progressLines.forEach(line => line.classList.remove('completed'));
         step1.classList.add('active');
     });
 
-    // Update progress when unit is selected
-    unidadeSelect.addEventListener('change', function() {
-        if (this.value) {
-            step2.classList.add('completed');
-            step3.classList.add('active');
-            progressLines[1].classList.add('completed');
-            
-            setTimeout(() => {
-                document.querySelector('.step-card[data-step="3"]').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
-            }, 100);
-        }
-    });
-
+    // Removida: Lógica de 'change' para unidadeSelect (Não é mais necessária)
+    
     // Character Counter
     if (queixaTextarea && charCount) {
         queixaTextarea.addEventListener('input', function() {

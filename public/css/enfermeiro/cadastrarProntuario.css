@@ -225,6 +225,10 @@ body {
 }
 
 .info-item.queixa-principal span {
+    /* Define a largura máxima para que o texto quebre */
+    max-width: 100%; 
+    /* Esta linha é a correção principal: força a quebra de palavras muito longas */
+    word-break: break-word;
     font-size: 1.1rem;
     font-style: italic;
     font-weight: 600;

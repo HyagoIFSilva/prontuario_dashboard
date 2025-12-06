@@ -10,19 +10,27 @@
         <h1>Meu Perfil (Recepcionista)</h1>
     </div>
 
-    <form action="{{ route('recepcionista.atualizarPerfil') }}" method="POST">
+    <form id="profileForm" action="{{ route('recepcionista.atualizarPerfil') }}" method="POST" enctype="multipart/form-data"> 
         @csrf
-        
-        @if (session('success'))
-            <div class="alert alert-success mt-3">{{ session('success') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger mt-3">
-                @foreach ($errors->all() as $error)
-                    {{ $error }}<br>
-                @endforeach
-            </div>
-        @endif
+
+        <div class="foto-upload-container">
+            @php $recepcionista = auth()->guard('recepcionista')->user(); @endphp 
+
+            <label for="foto" class="foto-upload-label">
+                <div class="box-foto">
+                    <img id="preview-img"
+                         src="{{ $recepcionista->foto ? asset('storage/' . $recepcionista->foto) : asset('img/usuario-de-perfil.png') }}" 
+                         alt="Foto atual">
+                </div>
+
+                <div class="overlay">
+                    <i class="bi bi-camera"></i>
+                    <span>Alterar Foto</span>
+                </div>
+            </label>
+            
+            <input type="file" id="foto" name="foto" accept="image/*" hidden onchange="previewFoto(event)">
+        </div>
 
         <div class="input-group">
             <label for="nomeRecepcionista">Nome:</label>
@@ -35,76 +43,124 @@
         </div>
 
         <div class="button-group">
-            <button type="submit" class="save-button">
-                Salvar Alterações
-            </button>
-            
-            <button type="button" id="openModalBtn" class="btn-trocar-senha">
+            <a href="{{ route('recepcionista.seguranca') }}" class="btn-trocar-senha">
                 <i class="bi bi-key-fill"></i> Trocar Senha
+            </a>
+
+            <button type="button" class="save-button" onclick="showConfirmationModal()">
+                <i class="bi bi-check-circle"></i> Salvar Alterações
             </button>
         </div>
     </form>
 </div>
 
-{{-- ESTRUTURA DO MODAL (Deve estar fora do form principal) --}}
-<div id="passwordModal" class="modal-overlay">
+<!-- Modal de Confirmação -->
+<div id="confirmationModal" class="modal-overlay">
     <div class="modal-box">
-        <i class="bi bi-shield-lock-fill modal-icon icon-warning"></i>
-        <h2>Confirmação de Senha</h2>
-        <p>Para sua segurança, confirme a senha atual antes de definir uma nova.</p>
-
-        <form id="trocaSenhaForm" action="{{ route('recepcionista.trocarSenha') }}" method="POST">
-            @csrf
-            
-            <div class="input-group">
-                <label for="current_password">Senha Atual:</label>
-                <input type="password" name="current_password" id="current_password" required>
-            </div>
-
-            <div class="input-group">
-                <label for="new_password">Nova Senha:</label>
-                <input type="password" name="new_password" id="new_password" required>
-            </div>
-            
-            <div class="input-group">
-                <label for="new_password_confirmation">Confirmar Nova Senha:</label>
-                <input type="password" name="new_password_confirmation" id="new_password_confirmation" required>
-            </div>
-
-            <div class="modal-buttons">
-                <button type="button" id="closeModalBtn" class="modal-btn modal-btn-cancel">
-                    Cancelar
-                </button>
-                <button type="submit" class="modal-btn modal-btn-confirm">
-                    Confirmar Troca
-                </button>
-            </div>
-        </form>
+        <i class="bi bi-exclamation-triangle-fill modal-icon icon-warning"></i>
+        <h2>Confirmar Alterações</h2>
+        <p>Deseja realmente salvar as alterações no seu perfil?</p>
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn modal-btn-cancel" onclick="hideConfirmationModal()">Cancelar</button>
+            <button type="button" class="modal-btn modal-btn-confirm" onclick="submitProfileForm()">Confirmar</button>
+        </div>
     </div>
 </div>
 
-@endsection
+<!-- Modal de Sucesso -->
+@if(session('success'))
+<div id="successModal" class="modal-overlay show">
+    <div class="modal-box">
+        <i class="bi bi-check-circle-fill modal-icon icon-success"></i>
+        <h2>Sucesso!</h2>
+        <p>{{ session('success') }}</p>
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn modal-btn-confirm" onclick="hideSuccessModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+@endif
 
-@section('scripts')
+<!-- Modal de Erro -->
+@if($errors->any())
+<div id="errorModal" class="modal-overlay show">
+    <div class="modal-box">
+        <i class="bi bi-exclamation-triangle-fill modal-icon icon-error"></i>
+        <h2>Erro!</h2>
+        <p>
+            @foreach ($errors->all() as $error)
+                {{ $error }}<br>
+            @endforeach
+        </p>
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn modal-btn-confirm" onclick="hideErrorModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+@endif
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('passwordModal');
-    const openBtn = document.getElementById('openModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
-
-    openBtn.addEventListener('click', () => {
-        modal.classList.add('show');
-    });
-
-    closeBtn.addEventListener('click', () => {
-        modal.classList.remove('show');
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('show');
+    function previewFoto(event) {
+        const input = event.target;
+        const preview = document.getElementById('preview-img');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
         }
-    });
-});
+    }
+
+    const profileForm = document.getElementById('profileForm');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const successModal = document.getElementById('successModal');
+    const errorModal = document.getElementById('errorModal');
+
+    function showConfirmationModal() {
+        if (confirmationModal) confirmationModal.classList.add('show');
+    }
+
+    function hideConfirmationModal() {
+        if (confirmationModal) confirmationModal.classList.remove('show');
+    }
+
+    function submitProfileForm() {
+        hideConfirmationModal();
+        if (profileForm) profileForm.submit();
+    }
+
+    function hideSuccessModal() {
+        if (successModal) successModal.classList.remove('show');
+    }
+
+    function hideErrorModal() {
+        if (errorModal) errorModal.classList.remove('show');
+    }
+
+    window.onclick = function(event) {
+        if (event.target == confirmationModal) {
+            hideConfirmationModal();
+        }
+        if (event.target == successModal) {
+            hideSuccessModal();
+        }
+        if (event.target == errorModal) {
+            hideErrorModal();
+        }
+    }
+
+    @if(session('success'))
+    setTimeout(function() {
+        hideSuccessModal();
+    }, 5000);
+    @endif
+
+    @if($errors->any())
+    setTimeout(function() {
+        hideErrorModal();
+    }, 5000);
+    @endif
 </script>
+
 @endsection

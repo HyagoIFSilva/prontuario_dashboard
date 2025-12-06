@@ -70,17 +70,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="patient-quick-actions">
-                    <button class="quick-action-btn" title="Compartilhar">
-                        <i class="bi bi-share"></i>
-                    </button>
-                    <button class="quick-action-btn" title="Imprimir">
-                        <i class="bi bi-printer"></i>
-                    </button>
-                    <button class="quick-action-btn" title="Exportar">
-                        <i class="bi bi-download"></i>
-                    </button>
-                </div>
             </div>
 
             <div class="patient-card-body">
@@ -248,22 +237,13 @@
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a href="{{ route('medico.prontuario.edit', $consulta->idConsultaPK) }}" class="dropdown-item">
-                                        <i class="bi bi-pencil-square"></i>
-                                        <span>Editar</span>
-                                    </a>
+
                                     <button type="button" class="dropdown-item" onclick="openPdfModal({{ $consulta->idConsultaPK }})">
                                         <i class="bi bi-file-earmark-pdf-fill"></i>
                                         <span>Gerar PDFs</span>
                                     </button>
                                     <div class="dropdown-divider"></div>
-                                    <form action="{{ route('medico.prontuario.destroy', $consulta->idConsultaPK) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir esta consulta?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-trash3"></i>
-                                            <span>Excluir</span>
-                                        </button>
+
                                     </form>
                                 </div>
                             </div>

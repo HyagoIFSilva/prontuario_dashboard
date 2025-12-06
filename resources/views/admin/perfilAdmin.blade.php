@@ -3,10 +3,8 @@
 @section('content')
 
 <link rel="stylesheet" href="{{ asset('css/admin/perfilAdmin.css') }}">
-{{-- ========================================================= --}}
-{{-- --- ADICIONADO: Link para o CSS que contém os modais --- --}}
 <link rel="stylesheet" href="{{ asset('css/admin/AdmSeguranca.css') }}">
-{{-- ========================================================= --}}
+
 
 
 @php $admin = auth()->guard('admin')->user(); @endphp

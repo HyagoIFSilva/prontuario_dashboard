@@ -9,15 +9,15 @@
 
 <main class="main-dashboard">
     <div class="medico-container">
-        <!-- DASHBOARD DE MÉTRICAS -->
+
         <div class="metrics-dashboard">
             <div class="metric-card total">
                 <div class="metric-icon">
                     <i class="bi bi-people-fill"></i>
                 </div>
                 <div class="metric-info">
-                    <span class="metric-label">Total de Médicos</span>
-                    <span class="metric-value" id="metric-total">{{ $totalMedicos ?? 0 }}</span>
+                    <span class="metric-label">TOTAL DE MÉDICOS</span>
+                    <span class="metric-value">{{ $totalMedicos ?? 0 }}</span>
                 </div>
             </div>
 
@@ -26,7 +26,7 @@
                     <i class="bi bi-check-circle-fill"></i>
                 </div>
                 <div class="metric-info">
-                    <span class="metric-label">Ativos</span>
+                    <span class="metric-label">ATIVOS</span>
                     <span class="metric-value">{{ $medicos->where('usuario.statusAtivoUsuario', 1)->count() }}</span>
                 </div>
             </div>
@@ -36,23 +36,14 @@
                     <i class="bi bi-x-circle-fill"></i>
                 </div>
                 <div class="metric-info">
-                    <span class="metric-label">Inativos</span>
+                    <span class="metric-label">INATIVOS</span>
                     <span class="metric-value">{{ $medicos->where('usuario.statusAtivoUsuario', 0)->count() }}</span>
                 </div>
             </div>
 
-            <div class="metric-card new">
-                <div class="metric-icon">
-                    <i class="bi bi-star-fill"></i>
-            </div>
-                <div class="metric-info">
-                    <span class="metric-label">Novos este Mês</span>
-                    <span class="metric-value" id="metric-novos">{{ $novosCount ?? 0 }}</span> 
-                </div>
-            </div>
         </div>
 
-        <!-- HEADER COM AÇÕES -->
+
         <div class="medico-header">
             <div class="header-title">
                 <h1><i class="bi bi-person-badge"></i> Gerenciamento de Médicos</h1>
@@ -60,16 +51,13 @@
             </div>
             
             <div class="header-actions">
-                <button onclick="exportToExcel()" class="btn-export" title="Exportar para Excel">
-                    <i class="bi bi-file-earmark-spreadsheet"></i> Exportar
-                </button>
                 <a href="{{ route('unidade.medicos.create') }}" class="btn-add-medico">
                     <i class="bi bi-plus-circle"></i> Cadastrar Médico
                 </a>
             </div>
         </div>
 
-        <!-- FILTROS AVANÇADOS -->
+
         <div class="search-filters">
             <div class="search-box">
                 <i class="bi bi-search"></i>
@@ -102,39 +90,15 @@
             </button>
         </div>
 
-        <!-- AÇÕES EM MASSA -->
-        <div class="bulk-actions" id="bulkActions" style="display: none;">
-            <div class="bulk-info">
-                <i class="bi bi-check-square"></i>
-                <span id="selectedCount">0</span> médico(s) selecionado(s)
-            </div>
-            <div class="bulk-buttons">
-                <button onclick="bulkActivate()" class="btn-bulk-activate">
-                    <i class="bi bi-check-circle"></i> Ativar Selecionados
-                </button>
-                <button onclick="bulkDeactivate()" class="btn-bulk-deactivate">
-                    <i class="bi bi-x-circle"></i> Desativar Selecionados
-                </button>
-                <button onclick="clearSelection()" class="btn-bulk-clear">
-                    <i class="bi bi-x"></i> Limpar Seleção
-                </button>
-            </div>
-        </div>
 
-        <!-- VISUALIZAÇÃO EM LISTA -->
         <div class="box-table" id="listView">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                        </th>
                         <th onclick="sortTable('nome')" style="cursor: pointer;">
-                            Nome Médico <i class="bi bi-arrow-down-up sort-icon"></i>
+                            NOME MÉDICO <i class="bi bi-arrow-down-up sort-icon"></i>
                         </th>
-                        <th onclick="sortTable('crm')" style="cursor: pointer;">
-                            CRM <i class="bi bi-arrow-down-up sort-icon"></i>
-                        </th>
+                        <th>CRM</th>
                         <th>Email</th>
                         <th>Status</th>
                         <th style="text-align: center;">Ações</th>
@@ -143,11 +107,7 @@
                 <tbody>
                     @foreach ($medicos as $medico)
                     <tr data-status="{{ optional($medico->usuario)->statusAtivoUsuario == 1 ? 'ativo' : 'inativo' }}" 
-                        data-id="{{ $medico->idMedicoPK }}"
                         class="{{ $medico->created_at >= now()->subDays(7) ? 'new-entry' : '' }}">
-                        <td>
-                            <input type="checkbox" class="select-medico" value="{{ $medico->idMedicoPK }}" onchange="updateBulkActions()">
-                        </td>
                         <td>
                             <div class="medico-name-cell">
                                 <div class="medico-avatar">
@@ -177,7 +137,7 @@
                             @endif
                         </td>
                         <td class="actions">
-                            <button onclick="quickView({{ $medico->idMedicoPK }})" class="btn-action btn-view" title="Visualizar Rápido">
+                            <button onclick="quickView({{ $medico->idMedicoPK }}, event)" class="btn-action btn-view" title="Visualizar Rápido">
                                 <i class="bi bi-eye"></i>
                             </button>
                             
@@ -186,7 +146,7 @@
                             </a>
 
                             @if($medico->usuario)
-                                <button onclick="openStatusModal('{{ $medico->idMedicoPK }}', '{{ $medico->nomeMedico }}', {{ optional($medico->usuario)->statusAtivoUsuario }})" 
+                                <button onclick="openStatusModal('{{ $medico->idMedicoPK }}', '{{ $medico->nomeMedico }}', {{ optional($medico->usuario)->statusAtivoUsuario }}, event)" 
                                         class="btn-action btn-toggle" 
                                         title="{{ optional($medico->usuario)->statusAtivoUsuario == 1 ? 'Desativar' : 'Ativar' }}">
                                     @if(optional($medico->usuario)->statusAtivoUsuario == 1)
@@ -202,7 +162,7 @@
                     
                     @if($medicos->isEmpty())
                         <tr data-status="empty-list">
-                            <td colspan="6" class="no-doctors">
+                            <td colspan="5" class="no-medicos">
                                 <i class="bi bi-inbox"></i>
                                 <p>Nenhum médico cadastrado.</p>
                             </td>
@@ -212,12 +172,11 @@
             </table>
         </div>
 
-        <!-- VISUALIZAÇÃO EM CARDS -->
+
         <div class="grid-view" id="gridView" style="display: none;">
             @foreach ($medicos as $medico)
-            <div class="medico-card" data-status="{{ optional($medico->usuario)->statusAtivoUsuario == 1 ? 'ativo' : 'inativo' }}" data-id="{{ $medico->idMedicoPK }}">
+            <div class="medico-card" data-status="{{ optional($medico->usuario)->statusAtivoUsuario == 1 ? 'ativo' : 'inativo' }}">
                 <div class="card-header">
-                    <input type="checkbox" class="select-medico" value="{{ $medico->idMedicoPK }}" onchange="updateBulkActions()">
                     @if($medico->created_at >= now()->subDays(7))
                         <span class="badge-new">Novo</span>
                     @endif
@@ -244,14 +203,14 @@
                 </div>
                 
                 <div class="card-actions">
-                    <button onclick="quickView({{ $medico->idMedicoPK }})" class="btn-action btn-view">
+                    <button onclick="quickView({{ $medico->idMedicoPK }}, event)" class="btn-action btn-view" title="Visualizar Rápido">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <a href="{{ route('unidade.medicos.edit', $medico->idMedicoPK) }}" class="btn-action btn-edit">
+                    <a href="{{ route('unidade.medicos.edit', $medico->idMedicoPK) }}" class="btn-action btn-edit" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </a>
                     @if($medico->usuario)
-                        <button onclick="openStatusModal('{{ $medico->idMedicoPK }}', '{{ $medico->nomeMedico }}', {{ optional($medico->usuario)->statusAtivoUsuario }})" class="btn-action btn-toggle">
+                        <button onclick="openStatusModal('{{ $medico->idMedicoPK }}', '{{ $medico->nomeMedico }}', {{ optional($medico->usuario)->statusAtivoUsuario }}, event)" class="btn-action btn-toggle" title="{{ optional($medico->usuario)->statusAtivoUsuario == 1 ? 'Desativar' : 'Ativar' }}">
                             @if(optional($medico->usuario)->statusAtivoUsuario == 1)
                                 <i class="bi bi-toggle-on text-success"></i>
                             @else
@@ -328,12 +287,10 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-    // ===== VARIÁVEIS GLOBAIS =====
     let currentView = 'list';
-    let selectedMedicos = new Set();
 
-    // ===== VISUALIZAÇÃO (LISTA/CARDS) =====
     function changeView(view) {
         currentView = view;
         const listView = document.getElementById('listView');
@@ -356,164 +313,51 @@
         }
     }
 
-    // ===== SELEÇÃO MÚLTIPLA =====
-    function toggleSelectAll() {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.select-medico');
+    function quickView(medicoId, event) {
+        if (event) event.stopPropagation();
         
-        checkboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const card = checkbox.closest('.medico-card');
-            
-            if ((row && row.style.display !== 'none') || (card && card.style.display !== 'none')) {
-                checkbox.checked = selectAll.checked;
-                if (selectAll.checked) {
-                    selectedMedicos.add(checkbox.value);
-                } else {
-                    selectedMedicos.delete(checkbox.value);
-                }
-            }
-        });
-        
-        updateBulkActions();
-    }
-
-    function updateBulkActions() {
-        const checkboxes = document.querySelectorAll('.select-medico:checked');
-        selectedMedicos.clear();
-        
-        checkboxes.forEach(cb => selectedMedicos.add(cb.value));
-        
-        const bulkActions = document.getElementById('bulkActions');
-        const selectedCount = document.getElementById('selectedCount');
-        
-        if (selectedMedicos.size > 0) {
-            bulkActions.style.display = 'flex';
-            selectedCount.textContent = selectedMedicos.size;
-        } else {
-            bulkActions.style.display = 'none';
-        }
-    }
-
-    function clearSelection() {
-        selectedMedicos.clear();
-        document.querySelectorAll('.select-medico').forEach(cb => cb.checked = false);
-        document.getElementById('selectAll').checked = false;
-        updateBulkActions();
-    }
-
-    function bulkActivate() {
-        if (selectedMedicos.size === 0) return;
-        alert(`Ativando ${selectedMedicos.size} médico(s)...\n\nImplementar lógica no backend com rota POST enviando array de IDs.`);
-    }
-
-    function bulkDeactivate() {
-        if (selectedMedicos.size === 0) return;
-        alert(`Desativando ${selectedMedicos.size} médico(s)...\n\nImplementar lógica no backend com rota POST enviando array de IDs.`);
-    }
-
-    // ===== VISUALIZAÇÃO RÁPIDA =====
-    function quickView(medicoId) {
         const modal = document.getElementById('quickViewModal');
         const content = document.getElementById('quickViewContent');
         
         modal.style.display = 'flex';
         content.innerHTML = '<div class="loading-spinner"><i class="bi bi-hourglass-spin"></i> Carregando...</div>';
         
-        // Simular carregamento de dados (substituir por fetch real)
-        setTimeout(() => {
+        fetch(`/unidade/medicos/${medicoId}/quick-view`)
+        .then(response => response.json())
+        .then(data => {
             content.innerHTML = `
                 <div class="quick-view-grid">
                     <div class="quick-view-header">
-                        <div class="quick-view-avatar-large">DR</div>
+                        <div class="quick-view-avatar-large">${data.nome.substring(0, 2).toUpperCase()}</div>
                         <div class="quick-view-info">
-                            <h3>Dr. Richard Rezende Jr.</h3>
-                            <p><i class="bi bi-card-text"></i> <strong>CRM:</strong> 55785/GO</p>
-                            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> pvelasques@example.com</p>
-                            <p><i class="bi bi-circle-fill text-success"></i> <strong>Status:</strong> Ativo</p>
-                            <p><i class="bi bi-calendar-plus"></i> <strong>Cadastrado em:</strong> 15/10/2024</p>
+                            <h3>${data.nome}</h3>
+                            <p><i class="bi bi-clipboard2-pulse"></i> <strong>Especialidade:</strong> ${data.especialidade}</p>
+                            <p><i class="bi bi-card-text"></i> <strong>CRM:</strong> ${data.crm}</p>
+                            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> ${data.email}</p>
+                            <p><i class="bi bi-circle-fill ${data.status == 1 ? 'text-success' : 'text-danger'}"></i> <strong>Status:</strong> ${data.status == 1 ? 'Ativo' : 'Inativo'}</p>
                         </div>
                     </div>
-                    
-                    <div class="quick-view-stats">
-                        <div class="stat-item">
-                            <i class="bi bi-calendar-check"></i>
-                            <span class="stat-number">45</span>
-                            <p>Consultas Realizadas</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-clock-history"></i>
-                            <span class="stat-number">230h</span>
-                            <p>Total de Horas</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-star-fill"></i>
-                            <span class="stat-number">4.8</span>
-                            <p>Avaliação Média</p>
-                        </div>
-                    </div>
-                    
                     <div class="quick-view-actions">
-                        <a href="/unidade/medicos/edit/${medicoId}" class="btn-quick-edit">
+                        <a href="/unidade/medicos/${medicoId}/editar" class="btn-quick-edit">
                             <i class="bi bi-pencil"></i> Editar Perfil Completo
                         </a>
                     </div>
                 </div>
             `;
-        }, 800);
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            content.innerHTML = '<p>Erro ao carregar informações do médico.</p>';
+        });
     }
 
     function closeQuickView() {
         document.getElementById('quickViewModal').style.display = 'none';
     }
 
-    // ===== EXPORTAR PARA EXCEL =====
-    function exportToExcel() {
-        alert('Exportando para Excel...\n\nImplementar no backend:\n- Rota GET /unidade/medicos/export\n- Usar Laravel Excel (maatwebsite/excel)\n- Retornar arquivo .xlsx com filtros aplicados');
-    }
-
-    // ===== ORDENAÇÃO =====
-    let sortDirection = {};
-    function sortTable(column) {
-        alert(`Ordenando por ${column}...\n\nImplementar ordenação via JavaScript ou AJAX com backend.`);
-    }
-
-    // ===== FILTROS =====
-    function filterMedicos() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase();
-        const filterStatus = document.getElementById('filterStatus').value;
+    function openStatusModal(medicoId, medicoNome, currentStatus, event) {
+        if (event) event.stopPropagation();
         
-        // Filtrar tabela
-        document.querySelectorAll('#listView tbody tr').forEach(row => {
-            if (row.dataset.status === 'empty-list') return;
-            
-            const name = row.querySelector('.medico-name-cell .name')?.textContent.toLowerCase() || '';
-            const crm = row.querySelector('.crm-badge')?.textContent.toLowerCase() || '';
-            const email = row.children[3]?.textContent.toLowerCase() || '';
-            const status = row.dataset.status;
-            
-            const matchesSearch = name.includes(searchInput) || crm.includes(searchInput) || email.includes(searchInput);
-            const matchesStatus = !filterStatus || status === filterStatus;
-            
-            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-        });
-        
-        // Filtrar cards
-        document.querySelectorAll('.medico-card').forEach(card => {
-            const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            const crm = card.querySelector('.card-crm')?.textContent.toLowerCase() || '';
-            const email = card.querySelector('.card-email')?.textContent.toLowerCase() || '';
-            const status = card.dataset.status;
-            
-            const matchesSearch = name.includes(searchInput) || crm.includes(searchInput) || email.includes(searchInput);
-            const matchesStatus = !filterStatus || status === filterStatus;
-            
-            card.style.display = (matchesSearch && matchesStatus) ? 'block' : 'none';
-        });
-    }
-
-    // ===== MODAL DE STATUS =====
-    function openStatusModal(medicoId, medicoNome, currentStatus) {
         const modal = document.getElementById('statusMedicoModal');
         const form = document.getElementById('statusMedicoForm');
         const action = currentStatus == 1 ? 'desativar' : 'ativar';
@@ -530,7 +374,72 @@
         document.getElementById('statusMedicoModal').style.display = 'none';
     }
 
-    // ===== MODAL DE SUCESSO =====
+    let sortDirection = {};
+    function sortTable(column) {
+        const table = document.querySelector('#listView table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not([data-status="empty-list"])'));
+        
+        sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+        
+        rows.sort((a, b) => {
+            let aValue, bValue;
+            
+            if (column === 'nome') {
+                aValue = a.querySelector('.medico-name-cell .name').textContent.trim();
+                bValue = b.querySelector('.medico-name-cell .name').textContent.trim();
+            } else if (column === 'crm') {
+                aValue = a.children[1].textContent.trim();
+                bValue = b.children[1].textContent.trim();
+            } else if (column === 'email') {
+                aValue = a.children[2].textContent.trim();
+                bValue = b.children[2].textContent.trim();
+            } else if (column === 'status') {
+                aValue = a.dataset.status;
+                bValue = b.dataset.status;
+            }
+            
+            if (sortDirection[column] === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function filterMedicos() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const filterStatus = document.getElementById('filterStatus').value;
+        
+        document.querySelectorAll('#listView tbody tr').forEach(row => {
+            if (row.dataset.status === 'empty-list') return;
+            
+            const name = row.querySelector('.medico-name-cell .name')?.textContent.toLowerCase() || '';
+            const crm = row.querySelector('.crm-badge')?.textContent.toLowerCase() || '';
+            const email = row.children[2]?.textContent.toLowerCase() || '';
+            const status = row.dataset.status;
+            
+            const matchesSearch = name.includes(searchInput) || crm.includes(searchInput) || email.includes(searchInput);
+            const matchesStatus = !filterStatus || status === filterStatus;
+            
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+        
+        document.querySelectorAll('.medico-card').forEach(card => {
+            const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            const crm = card.querySelector('.card-crm')?.textContent.toLowerCase() || '';
+            const email = card.querySelector('.card-email')?.textContent.toLowerCase() || '';
+            const status = card.dataset.status;
+            
+            const matchesSearch = name.includes(searchInput) || crm.includes(searchInput) || email.includes(searchInput);
+            const matchesStatus = !filterStatus || status === filterStatus;
+            
+            card.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+    }
+
     function openSuccessModal(message) {
         document.getElementById('successMessage').textContent = message;
         document.getElementById('statusSuccessModal').style.display = 'flex';
@@ -541,7 +450,6 @@
         window.location.reload();
     }
 
-    // ===== CUSTOM SELECT =====
     function initializeCustomSelect(containerId) {
         const customSelect = document.getElementById(containerId);
         const selected = customSelect.querySelector(".selected");
@@ -571,7 +479,6 @@
         });
     }
 
-    // ===== EVENT LISTENERS =====
     document.addEventListener("DOMContentLoaded", () => {
         initializeCustomSelect("customStatus");
         
@@ -580,16 +487,21 @@
         @endif
     });
 
-    document.getElementById('statusMedicoModal').addEventListener('click', (e) => {
-        if (e.target.id === 'statusMedicoModal') closeStatusModal();
-    });
-
     document.getElementById('quickViewModal').addEventListener('click', (e) => {
         if (e.target.id === 'quickViewModal') closeQuickView();
+    });
+
+    document.getElementById('statusMedicoModal').addEventListener('click', (e) => {
+        if (e.target.id === 'statusMedicoModal') closeStatusModal();
     });
 
     document.getElementById('statusSuccessModal').addEventListener('click', (e) => {
         if (e.target.id === 'statusSuccessModal') closeSuccessModal();
     });
+
+    function exportToExcel() {
+        alert('Exportando para Excel...\n\nImplementar no backend:\n- Rota GET /unidade/medicos/export\n- Usar Laravel Excel (maatwebsite/excel)\n- Retornar arquivo .xlsx com filtros aplicados');
+    }
 </script>
+@endpush
 @endsection

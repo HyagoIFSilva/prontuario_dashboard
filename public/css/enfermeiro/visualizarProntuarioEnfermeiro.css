@@ -574,6 +574,11 @@ body {
 }
 
 .detail-content.pre-formatted {
+    /* Define a largura máxima para que o texto quebre */
+    max-width: 100%; 
+    
+    /* Esta linha é a correção principal: força a quebra de palavras muito longas */
+    word-break: break-word;
     white-space: pre-wrap;
 }
 

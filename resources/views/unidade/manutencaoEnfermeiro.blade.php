@@ -17,6 +17,7 @@
                 </div>
                 <div class="metric-info">
                     <span class="metric-label">Total de Enfermeiros</span>
+                    <span class="metric-value" id="metric-total">{{ $enfermeiros->count() }}</span>
                 </div>
             </div>
 
@@ -39,16 +40,6 @@
                     <span class="metric-value">{{ $enfermeiros->where('usuario.statusAtivoUsuario', 0)->count() }}</span>
                 </div>
             </div>
-
-            <div class="metric-card new">
-                <div class="metric-icon">
-                    <i class="bi bi-star-fill"></i>
-                </div>
-                <div class="metric-info">
-                    <span class="metric-label">Novos este Mês</span>
-                    <span class="metric-value">{{ $enfermeiros->where('created_at', '>=', now()->startOfMonth())->count() }}</span>
-                </div>
-            </div>
         </div>
 
         <!-- HEADER COM TÍTULO E AÇÕES -->
@@ -59,9 +50,6 @@
             </div>
             
             <div class="header-actions">
-                <button onclick="exportToExcel()" class="btn-export" title="Exportar para Excel">
-                    <i class="bi bi-file-earmark-spreadsheet"></i> Exportar
-                </button>
                 <a href="{{ route('unidade.enfermeiro.create') }}" class="btn-add-enfermeiro">
                     <i class="bi bi-plus-circle"></i> Cadastrar Enfermeiro
                 </a>
@@ -101,33 +89,11 @@
             </button>
         </div>
 
-        <!-- AÇÕES EM MASSA -->
-        <div class="bulk-actions" id="bulkActions" style="display: none;">
-            <div class="bulk-info">
-                <i class="bi bi-check-square"></i>
-                <span id="selectedCount">0</span> enfermeiro(s) selecionado(s)
-            </div>
-            <div class="bulk-buttons">
-                <button onclick="bulkActivate()" class="btn-bulk-activate">
-                    <i class="bi bi-check-circle"></i> Ativar Selecionados
-                </button>
-                <button onclick="bulkDeactivate()" class="btn-bulk-deactivate">
-                    <i class="bi bi-x-circle"></i> Desativar Selecionados
-                </button>
-                <button onclick="clearSelection()" class="btn-bulk-clear">
-                    <i class="bi bi-x"></i> Limpar Seleção
-                </button>
-            </div>
-        </div>
-
         <!-- VISUALIZAÇÃO EM LISTA -->
         <div class="box-table" id="listView">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                        </th>
                         <th onclick="sortTable('nome')" style="cursor: pointer;">
                             Nome Enfermeiro <i class="bi bi-arrow-down-up sort-icon"></i>
                         </th>
@@ -144,9 +110,6 @@
                     <tr data-status="{{ optional($enfermeiro->usuario)->statusAtivoUsuario == 1 ? 'ativo' : 'inativo' }}" 
                         data-id="{{ $enfermeiro->idEnfermeiroPK }}"
                         class="{{ $enfermeiro->created_at >= now()->subDays(7) ? 'new-entry' : '' }}">
-                        <td>
-                            <input type="checkbox" class="select-enfermeiro" value="{{ $enfermeiro->idEnfermeiroPK }}" onchange="updateBulkActions()">
-                        </td>
                         <td>
                             <div class="enfermeiro-name-cell">
                                 <div class="enfermeiro-avatar">
@@ -201,7 +164,7 @@
                     
                     @if($enfermeiros->isEmpty())
                         <tr data-status="empty-list">
-                            <td colspan="6" class="no-enfermeiros">
+                            <td colspan="5" class="no-enfermeiros">
                                 <i class="bi bi-inbox"></i>
                                 <p>Nenhum enfermeiro cadastrado.</p>
                             </td>
@@ -216,7 +179,6 @@
             @foreach ($enfermeiros as $enfermeiro)
             <div class="enfermeiro-card" data-status="{{ optional($enfermeiro->usuario)->statusAtivoUsuario == 1 ? 'ativo' : 'inativo' }}" data-id="{{ $enfermeiro->idEnfermeiroPK }}">
                 <div class="card-header">
-                    <input type="checkbox" class="select-enfermeiro" value="{{ $enfermeiro->idEnfermeiroPK }}" onchange="updateBulkActions()">
                     @if($enfermeiro->created_at >= now()->subDays(7))
                         <span class="badge-new">Novo</span>
                     @endif
@@ -330,7 +292,6 @@
 <script>
     // ===== VARIÁVEIS GLOBAIS =====
     let currentView = 'list';
-    let selectedEnfermeiros = new Set();
 
     // ===== VISUALIZAÇÃO (LISTA/CARDS) =====
     function changeView(view) {
@@ -355,62 +316,6 @@
         }
     }
 
-    // ===== SELEÇÃO MÚLTIPLA =====
-    function toggleSelectAll() {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.select-enfermeiro');
-        
-        checkboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const card = checkbox.closest('.enfermeiro-card');
-            
-            if ((row && row.style.display !== 'none') || (card && card.style.display !== 'none')) {
-                checkbox.checked = selectAll.checked;
-                if (selectAll.checked) {
-                    selectedEnfermeiros.add(checkbox.value);
-                } else {
-                    selectedEnfermeiros.delete(checkbox.value);
-                }
-            }
-        });
-        
-        updateBulkActions();
-    }
-
-    function updateBulkActions() {
-        const checkboxes = document.querySelectorAll('.select-enfermeiro:checked');
-        selectedEnfermeiros.clear();
-        
-        checkboxes.forEach(cb => selectedEnfermeiros.add(cb.value));
-        
-        const bulkActions = document.getElementById('bulkActions');
-        const selectedCount = document.getElementById('selectedCount');
-        
-        if (selectedEnfermeiros.size > 0) {
-            bulkActions.style.display = 'flex';
-            selectedCount.textContent = selectedEnfermeiros.size;
-        } else {
-            bulkActions.style.display = 'none';
-        }
-    }
-
-    function clearSelection() {
-        selectedEnfermeiros.clear();
-        document.querySelectorAll('.select-enfermeiro').forEach(cb => cb.checked = false);
-        document.getElementById('selectAll').checked = false;
-        updateBulkActions();
-    }
-
-    function bulkActivate() {
-        if (selectedEnfermeiros.size === 0) return;
-        alert(`Ativando ${selectedEnfermeiros.size} enfermeiro(s)...`);
-    }
-
-    function bulkDeactivate() {
-        if (selectedEnfermeiros.size === 0) return;
-        alert(`Desativando ${selectedEnfermeiros.size} enfermeiro(s)...`);
-    }
-
     // ===== VISUALIZAÇÃO RÁPIDA =====
     function quickView(enfermeiroId) {
         const modal = document.getElementById('quickViewModal');
@@ -419,46 +324,33 @@
         modal.style.display = 'flex';
         content.innerHTML = '<div class="loading-spinner"><i class="bi bi-hourglass-spin"></i> Carregando...</div>';
         
-        setTimeout(() => {
+        fetch(`/unidade/enfermeiros/${enfermeiroId}/quick-view`)
+        .then(response => response.json())
+        .then(data => {
             content.innerHTML = `
                 <div class="quick-view-grid">
                     <div class="quick-view-header">
-                        <div class="quick-view-avatar-large">EN</div>
+                        <div class="quick-view-avatar-large">${data.nome.substring(0, 2).toUpperCase()}</div>
                         <div class="quick-view-info">
-                            <h3>Enf. Maria Silva Santos</h3>
-                            <p><i class="bi bi-card-text"></i> <strong>COREN:</strong> 123456/SP</p>
-                            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> maria.silva@example.com</p>
-                            <p><i class="bi bi-circle-fill text-success"></i> <strong>Status:</strong> Ativo</p>
-                            <p><i class="bi bi-calendar-plus"></i> <strong>Cadastrado em:</strong> 15/10/2024</p>
+                            <h3>${data.nome}</h3>
+                            <p><i class="bi bi-card-text"></i> <strong>COREN:</strong> ${data.coren}</p>
+                            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> ${data.email}</p>
+                            <p><i class="bi bi-circle-fill ${data.status == 1 ? 'text-success' : 'text-danger'}"></i> <strong>Status:</strong> ${data.status == 1 ? 'Ativo' : 'Inativo'}</p>
+                            <p><i class="bi bi-calendar-plus"></i> <strong>Cadastrado em:</strong> ${data.created_at}</p>
                         </div>
                     </div>
-                    
-                    <div class="quick-view-stats">
-                        <div class="stat-item">
-                            <i class="bi bi-calendar-check"></i>
-                            <span class="stat-number">120</span>
-                            <p>Atendimentos</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-clock-history"></i>
-                            <span class="stat-number">450h</span>
-                            <p>Total de Horas</p>
-                        </div>
-                        <div class="stat-item">
-                            <i class="bi bi-star-fill"></i>
-                            <span class="stat-number">4.9</span>
-                            <p>Avaliação</p>
-                        </div>
-                    </div>
-                    
                     <div class="quick-view-actions">
-                        <a href="/unidade/enfermeiro/edit/${enfermeiroId}" class="btn-quick-edit">
+                        <a href="/unidade/enfermeiro/${enfermeiroId}/edit" class="btn-quick-edit">
                             <i class="bi bi-pencil"></i> Editar Perfil Completo
                         </a>
                     </div>
                 </div>
             `;
-        }, 800);
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            content.innerHTML = '<p>Erro ao carregar informações do enfermeiro.</p>';
+        });
     }
 
     function closeQuickView() {
@@ -472,7 +364,38 @@
 
     // ===== ORDENAÇÃO =====
     function sortTable(column) {
-        alert(`Ordenando por ${column}...`);
+        const table = document.querySelector('#listView table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr:not([data-status="empty-list"])'));
+        
+        let sortDirection = {};
+        sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+        
+        rows.sort((a, b) => {
+            let aValue, bValue;
+            
+            if (column === 'nome') {
+                aValue = a.querySelector('.enfermeiro-name-cell .name').textContent.trim();
+                bValue = b.querySelector('.enfermeiro-name-cell .name').textContent.trim();
+            } else if (column === 'coren') {
+                aValue = a.querySelector('.coren-badge').textContent.trim();
+                bValue = b.querySelector('.coren-badge').textContent.trim();
+            } else if (column === 'email') {
+                aValue = a.children[2].textContent.trim();
+                bValue = b.children[2].textContent.trim();
+            } else if (column === 'status') {
+                aValue = a.dataset.status;
+                bValue = b.dataset.status;
+            }
+            
+            if (sortDirection[column] === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
     }
 
     // ===== FILTROS =====
@@ -485,7 +408,7 @@
             
             const name = row.querySelector('.enfermeiro-name-cell .name')?.textContent.toLowerCase() || '';
             const coren = row.querySelector('.coren-badge')?.textContent.toLowerCase() || '';
-            const email = row.children[3]?.textContent.toLowerCase() || '';
+            const email = row.children[2]?.textContent.toLowerCase() || '';
             const status = row.dataset.status;
             
             const matchesSearch = name.includes(searchInput) || coren.includes(searchInput) || email.includes(searchInput);

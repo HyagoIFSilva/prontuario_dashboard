@@ -4,6 +4,8 @@
 
 @section('content')
 
+@php $admin = auth()->guard('admin')->user(); @endphp
+
 {{-- Reutilizando o mesmo CSS para manter a consistência --}}
 <link rel="stylesheet" href="{{ asset('css/admin/editarUnidade.css') }}">
 

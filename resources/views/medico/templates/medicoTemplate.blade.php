@@ -28,7 +28,7 @@
             </a>
             <a href="{{ route('medico.prontuario') }}" class="nav-item-medico">
                 <i class="bi bi-journal-medical"></i>
-                <span class="nav-text-medico">Prontuário</span>
+                <span class="nav-text-medico">Consulta</span>
             </a>
             <a href="{{ route('medico.ajuda') }}" class="nav-item-medico">
                 <i class="bi bi-question-circle-fill"></i>

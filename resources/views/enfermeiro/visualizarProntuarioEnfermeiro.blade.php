@@ -133,7 +133,7 @@
                         @if($anotacao->unidade_atendimento)
                         <div class="consulta-location">
                             <i class="bi bi-geo-alt-fill"></i>
-                            <span>{{ $anotacao->unidade_atendimento }}</span>
+                            <span>{{ $anotacao->unidadeAtendimento->nomeUnidade ?? 'Unidade Não Informada' }}</span>
                         </div>
                         @endif
                         

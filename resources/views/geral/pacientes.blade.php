@@ -15,7 +15,7 @@ use Carbon\Carbon;
     <div class="patients-container">
         <div class="patients-header">
             <h1><i class="bi bi-people-fill"></i> Gerenciamento de Pacientes</h1>
-            {{-- BOTÃO DE CADASTRAR PACIENTE --}}
+      
             <a href="{{ route('admin.pacientes.create') }}" class="btn-add-paciente">
                 <i class="bi bi-plus-circle"></i> Cadastrar Paciente
             </a>

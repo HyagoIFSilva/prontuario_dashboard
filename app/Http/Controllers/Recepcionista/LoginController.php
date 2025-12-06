@@ -27,9 +27,7 @@ class LoginController extends Controller
             'senha' => 'required|string',
         ]);
 
-        // Verifique se o nome das colunas no 'attempt' batem com o seu banco
-        // (emailRecepcionista e senhaRecepcionista)
-        // E também o nome do seu 'guard' (recepcionista)
+   
         $credentials = [
             'emailRecepcionista' => $request->email,
             'password' => $request->senha
@@ -39,18 +37,13 @@ class LoginController extends Controller
             
             $request->session()->regenerate();
 
-            // ================================================================
-            // --- AQUI ESTÁ A MÁGICA ---
-            // Ele envia um JSON para o JavaScript com a URL de redirecionamento.
-            // A rota 'recepcionista.dashboard' aponta para o AcolhimentoController.
-            // ================================================================
+
             return response()->json([
                 'message' => 'Login bem-sucedido!',
                 'redirect_url' => route('recepcionista.dashboard') 
             ]);
         }
 
-        // FALHA! Retorna um erro que o JavaScript vai pegar
         throw ValidationException::withMessages([
             'email' => ['As credenciais fornecidas estão incorretas.'],
         ]);

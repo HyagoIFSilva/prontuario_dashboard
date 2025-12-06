@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models; // <-- Namespace do Model
+namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +9,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Paciente;
 use App\Models\Medico;
 use App\Models\Enfermeiro;
+use App\Models\Recepcionista; // <-- IMPORTANTE
 
-
-class Unidade extends Authenticatable // <-- Herda de Authenticatable
+class Unidade extends Authenticatable
 {
     use HasFactory, SoftDeletes;
 
     protected $table = 'tbUnidade';
     protected $primaryKey = 'idUnidadePK';
 
-    
     protected $fillable = [
         'nomeUnidade',
         'tipoUnidade',
@@ -42,33 +41,31 @@ class Unidade extends Authenticatable // <-- Herda de Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Define o campo de senha usado pelo Auth.
-     */
     public function getAuthPassword()
     {
         return $this->senhaUnidade;
     }
 
-    /**
-     * Define o campo usado para login — neste caso, o CNPJ.
-     */
     public function getAuthIdentifierName()
     {
         return 'cnpjUnidade';
     }
 
-    /**
-     * Relações com médicos e enfermeiros.
-     */
     public function medicos()
     {
         return $this->belongsToMany(Medico::class, 'tbMedicoUnidade', 'idUnidadeFK', 'idMedicoFK');
     }
 
-
     public function enfermeiros()
     {
         return $this->belongsToMany(Enfermeiro::class, 'tbEnfermeiroUnidade', 'idUnidadeFK', 'idEnfermeiroFK');
+    }
+
+    /**
+     * RELAÇÃO ADICIONADA: Uma Unidade tem muitos Recepcionistas
+     */
+    public function recepcionistas()
+    {
+        return $this->hasMany(Recepcionista::class, 'idUnidadeFK', 'idUnidadePK');
     }
 }

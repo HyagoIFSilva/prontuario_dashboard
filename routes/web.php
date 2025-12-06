@@ -116,6 +116,7 @@ Route::middleware('auth:unidade')->prefix('unidade')->name('unidade.')->group(fu
     Route::put('/perfil/update', [UnidadeSegurancaController::class, 'atualizarPerfil'])->name('perfil.update');
     Route::post('/alterar-senha', [UnidadeSegurancaController::class, 'alterarSenha'])->name('alterarSenha');
     
+    
     // ----------------- MÉDICOS -----------------
     Route::get('/manutencaoMedicos', [MedicoController::class, 'index'])->name('manutencaoMedicos');
     Route::get('/cadastroMedico', [MedicoController::class, 'create'])->name('medicos.create');
@@ -126,6 +127,7 @@ Route::middleware('auth:unidade')->prefix('unidade')->name('unidade.')->group(fu
     Route::delete('/medicos/{id}', [MedicoController::class, 'excluir'])->name('medicos.excluir');
     Route::post('/medicos/{id}/toggle-status', [MedicoController::class, 'toggleStatus'])->name('medicos.toggleStatus');
     Route::post('/medicos/{medico}/unidades', [MedicoController::class, 'syncUnidades'])->name('medicos.syncUnidades');
+    Route::get('/medicos/{medico}/quick-view', [MedicoController::class, 'quickView'])->name('medicos.quick-view');
     
     // ----------------- ENFERMEIROS -----------------
     Route::get('/manutencaoEnfermeiro', [EnfermeiroController::class, 'index'])->name('manutencaoEnfermeiro');
@@ -137,6 +139,8 @@ Route::middleware('auth:unidade')->prefix('unidade')->name('unidade.')->group(fu
     Route::delete('/enfermeiro/{id}', [EnfermeiroController::class, 'excluir'])->name('enfermeiro.excluir');
     Route::post('/enfermeiro/{id}/toggle-status', [EnfermeiroController::class, 'toggleStatus'])->name('enfermeiro.toggleStatus');
     Route::post('/enfermeiro/{enfermeiro}/unidades', [EnfermeiroController::class, 'syncUnidades'])->name('enfermeiro.syncUnidades');
+    Route::get('/enfermeiros/{id}/quick-view', [EnfermeiroController::class, 'quickView'])->name('unidade.enfermeiro.quickView');
+
     
     // ----------------- RECEPCIONISTAS -----------------
     Route::get('/manutencaoRecepcionista', [RecepcionistaController::class, 'index'])->name('manutencaoRecepcionista');
@@ -146,7 +150,10 @@ Route::middleware('auth:unidade')->prefix('unidade')->name('unidade.')->group(fu
     Route::put('/recepcionistas/{recepcionista}', [RecepcionistaController::class, 'update'])->name('recepcionistas.update');
     Route::delete('/recepcionistas/{recepcionista}', [RecepcionistaController::class, 'destroy'])->name('recepcionistas.destroy');
     
-    // Rotas AJAX para Recepcionistas (sem status)
+    // --- ROTA ADICIONADA PARA ATIVAR/INATIVAR ---
+    Route::post('/recepcionistas/{id}/toggle-status', [RecepcionistaController::class, 'toggleStatus'])->name('recepcionistas.toggleStatus');
+    
+    // Rotas AJAX para Recepcionistas
     Route::get('/recepcionistas/{recepcionista}/quick-view', [RecepcionistaController::class, 'quickView'])->name('recepcionistas.quickView');
     Route::get('/recepcionistas/export', [RecepcionistaController::class, 'export'])->name('recepcionistas.export');
 });
@@ -213,15 +220,18 @@ Route::middleware('auth:enfermeiro')->prefix('enfermeiro')->name('enfermeiro.')-
 // --- ROTAS DO RECEPCIONISTA (PROTEGIDAS) ---
 // ===================================================================================
 Route::middleware('auth:recepcionista')->prefix('recepcionista')->name('recepcionista.')->group(function () {
-    
     Route::get('/dashboard', [RecepcionistaDashboardController::class, 'index'])->name('dashboard');
-    
     Route::post('/acolhimento/salvar', [RecepcionistaDashboardController::class, 'store'])->name('acolhimento.store');
-    
     Route::get('/pacientes/buscar', [AdminPacienteController::class, 'buscar'])->name('pacientes.buscar');
-    
     Route::post('/logout', [RecepcionistaLoginController::class, 'logout'])->name('logout');
+    
+    // Perfil
     Route::get('/perfil', [RecepcionistaConfiguracaoController::class, 'perfil'])->name('perfil');
     Route::post('/perfil/atualizar', [RecepcionistaConfiguracaoController::class, 'atualizarPerfil'])->name('atualizarPerfil');
     Route::post('/trocar-senha', [RecepcionistaConfiguracaoController::class, 'trocarSenha'])->name('trocarSenha');
+    
+    // Segurança (página dedicada)
+    Route::get('/seguranca', [RecepcionistaConfiguracaoController::class, 'showAlterarSenhaForm'])->name('seguranca');
+    Route::post('/alterar-senha', [RecepcionistaConfiguracaoController::class, 'alterarSenha'])->name('alterarSenha');
+
 });

@@ -13,7 +13,14 @@ class RecepcionistaController extends Controller
 {
     public function index()
     {
-        $recepcionistas = Recepcionista::all();
+        $unidade = Auth::guard('unidade')->user();
+
+        if (!$unidade) {
+            return redirect()->route('unidade.login')->with('error', 'Você precisa estar logado.');
+        }
+
+        $recepcionistas = $unidade->recepcionistas;
+
         return view('unidade.manutencaoRecepcionista', compact('recepcionistas'));
     }
 
@@ -25,59 +32,40 @@ class RecepcionistaController extends Controller
     public function store(Request $request)
     {
         try {
+
             $data = $request->validate([
                 'nomeRecepcionista' => 'required|string|max:255',
+                'genero' => [
+                    'required',
+                    'string',
+                    Rule::in(['Feminino', 'Masculino', 'Outro']),
+                ],
                 'emailRecepcionista' => ['required', 'email', 'unique:tbRecepcionista,emailRecepcionista'],
                 'senhaRecepcionista' => 'required|string|min:6',
             ]);
 
-            $data['senhaRecepcionista'] = Hash::make($data['senhaRecepcionista']);
-            $data['statusAtivoRecepcionista'] = 1; // Define como ativo por padrão
-            
             $unidade = Auth::guard('unidade')->user();
-            
+
             if (!$unidade) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Unidade não autenticada.'
-                    ], 401);
-                }
-                return back()->withErrors(['auth' => 'Unidade não autenticada.']);
+                return response()->json(['success' => false, 'message' => 'Unidade não autenticada.'], 401);
             }
 
+            $data['senhaRecepcionista'] = Hash::make($data['senhaRecepcionista']);
+            $data['statusAtivoRecepcionista'] = 1;
             $data['idUnidadeFK'] = $unidade->idUnidadePK;
 
             $recepcionista = Recepcionista::create($data);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Recepcionista cadastrado com sucesso!',
-                    'idRecepcionistaPK' => $recepcionista->idRecepcionistaPK
-                ], 201);
-            }
-
-            return redirect()->route('unidade.manutencaoRecepcionista')->with('success', 'Recepcionista cadastrado com sucesso!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Recepcionista cadastrado com sucesso!',
+                'idRecepcionistaPK' => $recepcionista->idRecepcionistaPK
+            ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro de validação',
-                    'errors' => $e->errors()
-                ], 422);
-            }
-            return back()->withErrors($e->errors());
-            
+            return response()->json(['success' => false, 'message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro ao cadastrar recepcionista: ' . $e->getMessage()
-                ], 500);
-            }
-            return back()->withErrors(['error' => 'Erro ao cadastrar recepcionista: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Erro ao cadastrar: ' . $e->getMessage()], 500);
         }
     }
 
@@ -95,7 +83,16 @@ class RecepcionistaController extends Controller
     {
         $data = $request->validate([
             'nomeRecepcionista' => 'sometimes|string|max:255',
-            'emailRecepcionista' => ['sometimes', 'email', Rule::unique('tbRecepcionista')->ignore($recepcionista->idRecepcionistaPK, 'idRecepcionistaPK')],
+            'genero' => [
+                'sometimes',
+                'string',
+                Rule::in(['Feminino', 'Masculino', 'Outro']),
+            ],
+            'emailRecepcionista' => [
+                'sometimes',
+                'email',
+                Rule::unique('tbRecepcionista')->ignore($recepcionista->idRecepcionistaPK, 'idRecepcionistaPK')
+            ],
             'senhaRecepcionista' => 'sometimes|nullable|string|min:6',
         ]);
 
@@ -107,57 +104,67 @@ class RecepcionistaController extends Controller
 
         $recepcionista->update($data);
 
-        return redirect()->route('unidade.manutencaoRecepcionista')->with('success', 'Recepcionista atualizado com sucesso!');
+        return redirect()->route('unidade.manutencaoRecepcionista')
+            ->with('success', 'Recepcionista atualizado com sucesso!');
     }
 
     public function destroy(Recepcionista $recepcionista)
     {
         $recepcionista->delete();
-        return redirect()->route('unidade.manutencaoRecepcionista')->with('success', 'Recepcionista excluído com sucesso!');
+        return redirect()->route('unidade.manutencaoRecepcionista')
+            ->with('success', 'Recepcionista excluído com sucesso!');
     }
-    
-    /**
-     * Visualização rápida de um recepcionista (para AJAX)
-     */
+
     public function quickView(Recepcionista $recepcionista)
     {
-        // Formata a data para exibição
-        $createdAt = $recepcionista->created_at->format('d/m/Y');
-        
         return response()->json([
             'id' => $recepcionista->idRecepcionistaPK,
             'nome' => $recepcionista->nomeRecepcionista,
             'email' => $recepcionista->emailRecepcionista,
+            'genero' => $recepcionista->genero,
             'status' => $recepcionista->statusAtivoRecepcionista,
-            'created_at' => $createdAt,
-            // Estes campos podem ser adicionados se existirem na tabela
-            'atendimentos' => $recepcionista->atendimentos ?? 0,
-            'horas_trabalhadas' => $recepcionista->horas_trabalhadas ?? 0,
-            'avaliacao' => $recepcionista->avaliacao ?? 'N/A'
+            'created_at' => $recepcionista->created_at->format('d/m/Y'),
         ]);
     }
-    
-    /**
-     * Exporta recepcionistas para Excel
-     */
+
     public function export()
     {
-        // Implementação básica - você pode usar uma biblioteca como Laravel Excel
-        $recepcionistas = Recepcionista::all();
-        
-        $csv = "Nome,Email,Status,Cadastrado em\n";
-        
-        foreach ($recepcionistas as $recepcionista) {
-            $status = $recepcionista->statusAtivoRecepcionista == 1 ? 'Ativo' : 'Inativo';
-            $dataCadastro = $recepcionista->created_at->format('d/m/Y');
-            $csv .= "{$recepcionista->nomeRecepcionista},{$recepcionista->emailRecepcionista},{$status},{$dataCadastro}\n";
+        $unidade = Auth::guard('unidade')->user();
+
+        if (!$unidade) {
+            return redirect()->route('unidade.login')->with('error', 'Você precisa estar logado.');
         }
-        
-        $headers = [
+
+        $recepcionistas = $unidade->recepcionistas;
+
+        $csv = "Nome,Gênero,Email,Status,Cadastrado em\n";
+
+        foreach ($recepcionistas as $r) {
+            $status = $r->statusAtivoRecepcionista == 1 ? 'Ativo' : 'Inativo';
+            $data = $r->created_at->format('d/m/Y');
+
+            $csv .= "{$r->nomeRecepcionista},{$r->genero},{$r->emailRecepcionista},{$status},{$data}\n";
+        }
+
+        return response($csv, 200, [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="recepcionistas.csv"',
-        ];
-        
-        return response($csv, 200, $headers);
+            'Content-Disposition' => 'attachment; filename=\"recepcionistas.csv\"',
+        ]);
+    }
+
+    public function toggleStatus($id)
+    {
+        $recepcionista = Recepcionista::findOrFail($id);
+
+        $novo = $recepcionista->statusAtivoRecepcionista == 1 ? 0 : 1;
+
+        $recepcionista->update([
+            'statusAtivoRecepcionista' => $novo
+        ]);
+
+        $msg = $novo ? 'ativado' : 'desativado';
+
+        return redirect()->route('unidade.manutencaoRecepcionista')
+            ->with('success', "O recepcionista foi {$msg} com sucesso!");
     }
 }

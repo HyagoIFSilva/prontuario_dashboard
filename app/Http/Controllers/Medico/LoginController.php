@@ -34,22 +34,17 @@ class LoginController extends Controller
 
         Auth::guard('medico')->login($medico->usuario);
 
-        // ✅ Adicionar a regeneração da sessão aqui
         $request->session()->regenerate();
-        // O token CSRF da sessão agora será atualizado,
-        // mas o token no frontend (que está no <meta>) permanece o mesmo.
-
-        // ✅ Verifica se é o primeiro login (statusSenhaUsuario == 1)
+        
         if ($medico->usuario->statusSenhaUsuario == 1) {
             return response()->json([
                 'need_password_change' => true,
                 'message' => 'Você precisa alterar sua senha antes de continuar.',
-                // Podemos incluir o novo token para ter certeza (opcional, mas recomendado)
+
                 'new_csrf_token' => csrf_token(),
             ]);
         }
 
-        // Login normal
         return response()->json([
             'profile_complete' => true,
             'redirect_url' => route('medico.dashboard'),
@@ -71,7 +66,7 @@ class LoginController extends Controller
 
         $usuario = $medico->usuario;
         $usuario->senhaUsuario = Hash::make($request->nova_senha);
-        $usuario->statusSenhaUsuario = 0; // ✅ agora ele não precisa mais trocar
+        $usuario->statusSenhaUsuario = 0;
         $usuario->save();
 
         return response()->json([

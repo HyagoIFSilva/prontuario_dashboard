@@ -4,6 +4,8 @@
 
 @section('content')
 
+@php $admin = auth()->guard('admin')->user(); @endphp
+
 <link rel="stylesheet" href="{{ asset('css/admin/editarPaciente.css') }}">
 
 <main class="main-dashboard">

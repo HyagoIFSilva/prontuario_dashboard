@@ -99,7 +99,7 @@
             <i class="bi bi-pencil-square"></i>
             <h2>Confirmar Edição</h2>
         </div>
-        <p>Deseja realmente salvar as alterações feitas neste(a) **médico(a)**?</p>
+        <p>Deseja realmente salvar as alterações feitas neste(a) médico(a)?</p>
         <div class="modal-buttons">
             <button type="button" onclick="closeEditModal()" class="btn-cancelar">Cancelar</button>
             {{-- Este botão submete o formulário principal --}}

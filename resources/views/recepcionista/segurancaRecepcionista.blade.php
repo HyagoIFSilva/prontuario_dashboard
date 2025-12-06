@@ -4,7 +4,6 @@
 
 @section('content')
 
-{{-- Usa o CSS específico para o Recepcionista --}}
 <link rel="stylesheet" href="{{ asset('css/recepcionista/seguranca.css') }}">
 
 <main class="main-dashboard">
@@ -12,7 +11,6 @@
         <h1><i class="bi bi-shield-lock-fill"></i> Configurações de Segurança</h1>
         <p>Gerencie suas configurações de segurança e privacidade</p>
 
-        {{-- Mensagens de erro GLOBAIS (apenas erro) --}}
         @if($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -26,11 +24,9 @@
         <div class="security-section">
             <h2><i class="bi bi-key-fill"></i> Alterar Senha</h2>
 
-            {{-- O ID 'securityForm' foi adicionado para o JavaScript --}}
             <form action="{{ route('recepcionista.alterarSenha') }}" method="POST" class="security-form" id="securityForm">
                 @csrf
                 
-                {{-- Senha Atual com Olhinho --}}
                 <div class="form-group">
                     <label for="senha_atual">Senha Atual:</label>
                     <div class="password-wrapper">
@@ -42,7 +38,6 @@
                     @enderror
                 </div>
 
-                {{-- Nova Senha com Olhinho --}}
                 <div class="form-group">
                     <label for="nova_senha">Nova Senha:</label>
                     <div class="password-wrapper">
@@ -55,7 +50,6 @@
                     @enderror
                 </div>
 
-                {{-- Confirmar Nova Senha com Olhinho --}}
                 <div class="form-group">
                     <label for="nova_senha_confirmation">Confirmar Nova Senha:</label>
                     <div class="password-wrapper">
@@ -64,10 +58,11 @@
                     </div>
                 </div>
                 
-                {{-- ALTERADO: type="button" e adicionado ID para JS --}}
                 <button type="button" id="openConfirmationModal" class="btn-primary">Alterar Senha</button>
             </form>
         </div>
+
+        
     </div>
 </main>
 

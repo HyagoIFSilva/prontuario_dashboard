@@ -5,7 +5,7 @@
   --roxo-claro: #AF54F7;
   --cinza: rgb(222, 187, 247);
   --branco: #ffffff;
-  --sombra: 0 8px 20px  rgba(60, 0, 97, 0.2);
+  --sombra: 0 8px 20px rgba(60, 0, 97, 0.2);
 }
 
 * {
@@ -74,13 +74,6 @@ body {
   transform: translateY(-3px);
 }
 
-/* --- Logo --- */
-.logo img {
-  width: 160px;
-  margin-bottom: 20px;
-  animation: fade-in 1.2s ease;
-}
-
 h2 {
   color: var(--roxo);
   font-size: 24px;
@@ -114,18 +107,24 @@ h2 {
 }
 
 .input-wrapper.focused {
-  border-color: var(--azul);
-  box-shadow: 0 0 0 3px  rgba(60, 0, 97, 0.2);
+  border-color: var(--roxo);
+  box-shadow: 0 0 0 3px rgba(60, 0, 97, 0.2);
   background-color: #fff;
 }
 
-.input-wrapper input {
+.input-wrapper input,
+.input-wrapper select {
   flex: 1;
   border: none;
   outline: none;
   font-size: 15px;
   color: #333;
   background: transparent;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.input-wrapper input::placeholder {
+  color: #999;
 }
 
 .icon-left {
@@ -134,15 +133,41 @@ h2 {
   font-size: 16px;
 }
 
-.icon-right {
-  color: var(--roxo);
-  margin-left: 8px;
+/* --- Select Estilizado --- */
+.input-select {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 15px;
+  color: #333;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
-  transition: 0.3s;
+  
+  /* Remove a seta padrão */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* Adiciona seta personalizada */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%233C0061'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 16px;
+  padding-right: 30px;
 }
 
-.icon-right:hover {
-  color: var(--roxo-claro);
+/* Remove o foco padrão do select */
+.input-select:focus {
+  outline: none;
+}
+
+/* Estiliza as opções do select */
+.input-select option {
+  background: white;
+  color: #333;
+  padding: 10px;
 }
 
 /* --- Botão --- */
@@ -158,6 +183,8 @@ h2 {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: var(--sombra);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
 }
 
 .btn-login:hover {
@@ -165,17 +192,33 @@ h2 {
   transform: translateY(-2px);
 }
 
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* --- Alerta --- */
 .alert-error {
+  background-color: #ffe6e6;
+  color: #d32f2f;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: left;
+  border-left: 4px solid #d32f2f;
+}
+
+.alert-success {
   background-color: #e0e7ff;
   color: #3C0061;
   padding: 10px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 15px;
-  animation: shake 0.4s;
-  text-align: left;
+  margin-top: 15px;
+  animation: fade-in 0.5s ease;
 }
 
 /* --- Animações --- */
@@ -246,35 +289,9 @@ h2 {
   }
 }
 
-.input-group .input-select {
-    width: 100%;
-    padding: 14px 18px;
-    font-size: 1rem;
-    color: var(--text-muted); /* Começa cinza */
-    background: var(--bg-gray-50);
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-md);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-    font-family: inherit;
-    line-height: 1.5;
-    cursor: pointer;
-
-    
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-
-   
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 18px center;
-    background-size: 1.25em 1.25em;
-    
-    padding-right: 48px; 
-}
-
-
-.input-group .input-select:valid {
-    color: var(--text-primary);
+/* Campo de unidade (readonly) */
+input[readonly] {
+  background-color: #f5f5f5 !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
 }

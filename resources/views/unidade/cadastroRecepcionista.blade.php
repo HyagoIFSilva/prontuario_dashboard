@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,8 @@
     <link rel="stylesheet" href="{{ url('/css/unidade/cadastroRecepcionista.css') }}">
     <link rel="shortcut icon" href="{{url('img/logo-azul.png')}}" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
 
 <body>
@@ -31,6 +34,21 @@
                         </div>
                     </div>
 
+
+                    <div class="input-group">
+                            <label for="genero">Gênero</label>
+                            <div class="input-wrapper input-wrapper-select">
+                            <i class="fa-solid fa-venus-mars icon-left"></i>
+                                    <select id="genero" name="genero" required>
+                                <option value="" disabled selected>Selecione o gênero</option>
+                                <option value="Feminino">Feminino</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                               
+                        </div>
+                    </div>
+
                     <div class="input-group">
                         <label for="emailRecepcionista">E-mail</label> <!-- 🔥 Corrigi o name -->
                         <div class="input-wrapper">
@@ -43,7 +61,10 @@
                         <label for="senhaRecepcionista">Senha</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock icon-left"></i>
+
                             <input type="password" id="senhaRecepcionista" name="senhaRecepcionista" required minlength="6" />
+
+                            <i id="toggleNovaSenha" class="bi bi-eye-slash icon-right-pass"></i>
                         </div>
                     </div>
 
@@ -54,7 +75,7 @@
     </main>
 
     <script>
-        document.getElementById('cadastroRecepcionistaForm').addEventListener('submit', function (event) {
+        document.getElementById('cadastroRecepcionistaForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
             const form = event.target;
@@ -68,47 +89,49 @@
             messagesDiv.style.display = 'none';
 
             fetch("{{ route('unidade.recepcionistas.store') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                },
-                body: formData 
-            })
-            .then(response => {
-                if (!response.ok) { 
-                    return response.json().then(err => { throw err; });
-                }
-                return response.json();
-            })
-            .then(result => {
-                if (result.success || result.idRecepcionistaPK) {
-                    const message = result.message || "Recepcionista cadastrado com sucesso!";
-                    messagesDiv.textContent = message + " Redirecionando...";
-                    messagesDiv.classList.remove('error');
-                    messagesDiv.classList.add('success');
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw err;
+                        });
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success || result.idRecepcionistaPK) {
+                        const message = result.message || "Recepcionista cadastrado com sucesso!";
+                        messagesDiv.textContent = message + " Redirecionando...";
+                        messagesDiv.classList.remove('error');
+                        messagesDiv.classList.add('success');
+                        messagesDiv.style.display = 'block';
+                        form.reset();
+                        setTimeout(function() {
+                            window.location.href = "{{ route('unidade.manutencaoRecepcionista') }}";
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    let errorText = error.message || 'Ocorreu um erro no cadastro.';
+                    if (error.errors) {
+                        errorText = Object.values(error.errors).flat().join(' ');
+                    }
+                    messagesDiv.textContent = errorText;
+                    messagesDiv.classList.remove('success');
+                    messagesDiv.classList.add('error');
                     messagesDiv.style.display = 'block';
-                    form.reset();
-                    setTimeout(function () {
-                        window.location.href = "{{ route('unidade.manutencaoRecepcionista') }}";
-                    }, 2000);
-                }
-            })
-            .catch(error => { 
-                console.error('Erro:', error);
-                let errorText = error.message || 'Ocorreu um erro no cadastro.';
-                if (error.errors) {
-                    errorText = Object.values(error.errors).flat().join(' ');
-                }
-                messagesDiv.textContent = errorText;
-                messagesDiv.classList.remove('success');
-                messagesDiv.classList.add('error');
-                messagesDiv.style.display = 'block';
-            })
-            .finally(() => {
-                button.disabled = false;
-                button.textContent = 'CADASTRAR';
-            });
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.textContent = 'CADASTRAR';
+                });
         });
 
         const inputs = document.querySelectorAll(".input-wrapper input, .input-wrapper select");
@@ -125,7 +148,27 @@
             if (input.value !== "") {
                 input.parentElement.classList.add("focused");
             }
+
         });
+
+        // --- FUNÇÃO ADICIONADA PARA O "OLHINHO" ---
+        function setupPasswordToggle(inputId, toggleId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.getElementById(toggleId);
+        
+        if (input && toggle) {
+            toggle.addEventListener('click', () => {
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                
+                toggle.classList.toggle('bi-eye');
+                toggle.classList.toggle('bi-eye-slash');
+            });
+        }
+    }
+        setupPasswordToggle('senhaRecepcionista', 'toggleNovaSenha');
+
     </script>
 </body>
+
 </html>

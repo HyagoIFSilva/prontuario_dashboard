@@ -23,35 +23,44 @@ class RecepcionistaConfiguracaoController extends Controller
     }
 
     public function atualizarPerfil(Request $request)
-    {
-        $recepcionista = Auth::guard('recepcionista')->user();
+{
+    $recepcionista = Auth::guard('recepcionista')->user();
 
-        if (!$recepcionista) {
-            return redirect()->route('recepcionista.login')->with('error', 'Sessão expirada. Faça login novamente.');
+    $request->validate([
+        'nomeRecepcionista' => 'required|string|max:255',
+        'emailRecepcionista' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('tbRecepcionista', 'emailRecepcionista')
+                ->ignore($recepcionista->idRecepcionistaPK, 'idRecepcionistaPK'),
+        ],
+    ]);
+
+    $recepcionista->nomeRecepcionista = $request->nomeRecepcionista;
+    $recepcionista->emailRecepcionista = $request->emailRecepcionista;
+
+    if ($request->hasFile('foto')) {
+
+        if ($recepcionista->foto && \Storage::exists('public/' . $recepcionista->foto)) {
+            \Storage::delete('public/' . $recepcionista->foto);
         }
 
-        $request->validate([
-            'nomeRecepcionista' => 'required|string|max:255',
-            'emailRecepcionista' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('tbRecepcionista', 'emailRecepcionista')
-                    ->ignore($recepcionista->idRecepcionistaPK, 'idRecepcionistaPK'),
-            ],
-        ], [
-            'emailRecepcionista.unique' => 'Este e-mail já está cadastrado em outra conta.',
-        ]);
-
-        $recepcionista->nomeRecepcionista = $request->nomeRecepcionista;
-        $recepcionista->emailRecepcionista = $request->emailRecepcionista;
-        $recepcionista->save();
-
-        return redirect()->route('recepcionista.perfil')->with('success', 'Perfil atualizado com sucesso!');
+        $path = $request->file('foto')->store('recepcionistas', 'public');
+        $recepcionista->foto = $path;
     }
 
-    // MÉTODO PARA TROCAR SENHA VIA MODAL
-    public function trocarSenha(Request $request)
+    $recepcionista->save();
+
+    return redirect()->route('recepcionista.perfil')->with('success', 'Perfil atualizado com sucesso!');
+}
+
+    public function showAlterarSenhaForm()
+    {
+        return view('recepcionista.segurancaRecepcionista');
+    }
+
+    public function alterarSenha(Request $request)
     {
         $recepcionista = Auth::guard('recepcionista')->user();
 
@@ -60,24 +69,22 @@ class RecepcionistaConfiguracaoController extends Controller
         }
 
         $request->validate([
-            'current_password' => 'required|string',
-            'new_password' => 'required|string|min:6|confirmed',
+            'senha_atual' => 'required',
+            'nova_senha' => 'required|min:8|confirmed',
         ], [
-            'current_password.required' => 'A senha atual é obrigatória.',
-            'new_password.required' => 'A nova senha é obrigatória.',
-            'new_password.min' => 'A nova senha deve ter pelo menos 6 caracteres.',
-            'new_password.confirmed' => 'A confirmação da nova senha não coincide.',
+            'senha_atual.required' => 'A senha atual é obrigatória.',
+            'nova_senha.required' => 'A nova senha é obrigatória.',
+            'nova_senha.min' => 'A nova senha deve ter no mínimo 8 caracteres.',
+            'nova_senha.confirmed' => 'A confirmação da senha não confere.',
         ]);
 
-        // Verificar se a senha atual está correta
-        if (!Hash::check($request->current_password, $recepcionista->senhaRecepcionista)) {
-            return back()->withErrors(['current_password' => 'A senha atual está incorreta.'])->withInput();
+        if (!Hash::check($request->senha_atual, $recepcionista->senhaRecepcionista)) {
+            return back()->withErrors(['senha_atual' => 'Senha atual incorreta.']);
         }
 
-        // Atualizar a senha
-        $recepcionista->senhaRecepcionista = Hash::make($request->new_password);
+        $recepcionista->senhaRecepcionista = Hash::make($request->nova_senha);
         $recepcionista->save();
 
-        return redirect()->route('recepcionista.perfil')->with('success', 'Senha alterada com sucesso!');
+        return back()->with('success', 'Senha alterada com sucesso!');
     }
 }

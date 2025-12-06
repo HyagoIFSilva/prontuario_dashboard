@@ -7,7 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Unidade; // Importar o Model Unidade
+use App\Models\Unidade;
 
 class Recepcionista extends Authenticatable
 {
@@ -18,10 +18,15 @@ class Recepcionista extends Authenticatable
     public $timestamps = true; 
 
     protected $fillable = [
+        'foto',
         'nomeRecepcionista',
         'emailRecepcionista',
+        'genero',
         'senhaRecepcionista',
-        'idUnidadeFK', // <-- CORRIGIDO (estava idAdminFK)
+        'statusAtivoRecepcionista',
+        'idUnidadeFK'
+        
+        
     ];
 
     protected $hidden = [ 'senhaRecepcionista', 'remember_token' ];
@@ -31,10 +36,6 @@ class Recepcionista extends Authenticatable
         return $this->senhaRecepcionista;
     }
 
-    /**
-     * 🔥 CORREÇÃO: Relação com Unidade (1:N)
-     * (Removidas as relações 'admin()' e 'unidades()' da tabela pivô)
-     */
     public function unidade()
     {
         return $this->belongsTo(Unidade::class, 'idUnidadeFK', 'idUnidadePK');

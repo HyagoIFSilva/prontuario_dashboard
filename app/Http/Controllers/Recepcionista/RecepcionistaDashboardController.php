@@ -13,20 +13,13 @@ class RecepcionistaDashboardController extends Controller
 
     public function index()
     {
-
-        
-        $unidades = Unidade::where('statusAtivoUnidade', true)
-                            ->orderBy('nomeUnidade')
-                            ->get();
-                            
-        return view('recepcionista.dashboardRecepcionista', compact('unidades'));
+        return view('recepcionista.dashboardRecepcionista');
     }
 
     public function store(Request $request)
     {
         $dadosValidados = $request->validate([
             'paciente_id' => 'required|exists:tbPaciente,idPaciente',
-            'unidade_id' => 'required|exists:tbUnidade,idUnidadePK',
             'queixa_principal' => 'required|string|min:10',
         ]);
 
@@ -34,11 +27,15 @@ class RecepcionistaDashboardController extends Controller
         
         $consulta->idPacienteFK = $dadosValidados['paciente_id'];
         $consulta->queixa_principal = $dadosValidados['queixa_principal'];
-        $consulta->idUnidadeFK = $dadosValidados['unidade_id'];
         
-        $unidade = Unidade::find($dadosValidados['unidade_id']);
-        $consulta->unidade = $unidade?->nomeUnidade;
-   
+        $unidadePadraoId = Auth::user()->idUnidadeFK ?? 1; 
+
+        $consulta->idUnidadeFK = $unidadePadraoId;
+        
+        $unidade = Unidade::find($unidadePadraoId);
+        $consulta->unidade = $unidade?->nomeUnidade ?? 'Unidade Padrão Fixa';
+        
+        
         $consulta->idRecepcionistaFK = Auth::guard('recepcionista')->id(); 
         $consulta->dataConsulta = now();
         $consulta->status_atendimento = 'AGUARDANDO_TRIAGEM';
@@ -46,6 +43,6 @@ class RecepcionistaDashboardController extends Controller
         $consulta->save();
 
         return redirect()->route('recepcionista.dashboard')
-                         ->with('success', 'Paciente encaminhado para triagem!');
+                             ->with('success', 'Paciente encaminhado para triagem!');
     }
 }

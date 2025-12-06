@@ -1,9 +1,8 @@
-
-
+   
    :root {
-    --primary-blue: #0618b9;
-    --primary-blue-dark: #04108a;
-    --primary-blue-light: #0820e0;
+    --primary-blue: #3C0061;
+    --primary-blue-dark: #3C0061;
+    --primary-blue-light: #3C0061;
     --bg-white: #FFFFFF;
     --bg-gray-50: #F9FAFB;
     --bg-gray-100: #F3F4F6;
@@ -22,7 +21,6 @@
     --radius-md: 12px;
     --radius-lg: 16px;
 }
-
 body {
     margin: 0;
     padding: 20px;

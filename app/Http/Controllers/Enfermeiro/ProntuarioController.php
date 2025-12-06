@@ -178,6 +178,7 @@ class ProntuarioController extends Controller
         $paciente = Paciente::findOrFail($pacienteId);
 
         $anotacoes = AnotacaoEnfermagem::where('idPacienteFK', $pacienteId)
+            ->with('unidadeAtendimento') // Carrega o relacionamento definido no Model
             ->orderBy('data_hora', 'desc')
             ->get();
 

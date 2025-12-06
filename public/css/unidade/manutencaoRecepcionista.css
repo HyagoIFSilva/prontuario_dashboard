@@ -584,7 +584,6 @@ body {
 
 .box-table tbody tr.new-entry {
     position: relative;
-    /* REMOVIDO: Estilo da barra lateral laranja para new-entry */
 }
 
 .box-table td {
@@ -631,8 +630,7 @@ body {
     color: var(--text-primary);
 }
 
-/* REMOVIDO: Estilo para o badge 'NOVO' que criava o destaque */
-/* .badge-new {
+.badge-new {
     display: inline-block;
     background: var(--warning-orange);
     color: white;
@@ -642,7 +640,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-} */
+}
 
 .no-recepcionistas {
     text-align: center;
@@ -761,7 +759,7 @@ body {
 }
 
 /* ============================================
-    VISUALIZAÇÃO EM CARDS (GRID)
+    VISUALIZAÇÃO EM CARDS (GRID) - CORREÇÕES
     ============================================ */
 .grid-view {
     display: grid;
@@ -782,6 +780,7 @@ body {
     overflow: hidden;
 }
 
+/* CORREÇÃO: Adicionar pointer-events: none para que o efeito não bloqueie cliques */
 .recepcionista-card::before {
     content: '';
     position: absolute;
@@ -792,6 +791,7 @@ body {
     background: radial-gradient(circle, rgba(60, 0, 97, 0.05) 0%, transparent 70%);
     transition: all 0.5s ease;
     opacity: 0;
+    pointer-events: none; /* <-- LINHA ADICIONADA */
 }
 
 .recepcionista-card:hover::before {
@@ -842,12 +842,20 @@ body {
     margin-bottom: 16px;
 }
 
+.card-status {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+/* CORREÇÃO: Garantir que os botões estejam acima de outros elementos */
 .card-actions {
     display: flex;
     justify-content: center;
     gap: 10px;
     padding-top: 16px;
     border-top: 1px solid var(--border-color);
+    position: relative; /* <-- LINHA ADICIONADA */
+    z-index: 10;       /* <-- LINHA ADICIONADA */
 }
 
 /* ============================================

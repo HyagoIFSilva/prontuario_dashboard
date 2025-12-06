@@ -134,7 +134,7 @@
                                     <td class="actions">
                                         <a href="{{ route('enfermeiro.visualizarProntuario', $paciente->idPaciente) }}"
                                            class="btn-action btn-view"
-                                           title="Ver Histórico Completo">
+                                           title="Ver Histórico">
                                            <i class="bi bi-eye-fill"></i>
                                         </a>
                                     </td>

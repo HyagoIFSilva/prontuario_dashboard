@@ -3,7 +3,7 @@
 :root {
   --roxo: #3C0061;
   --roxo-claro: #AF54F7;
-  --cinza: rgb(222, 187, 247);
+  --cinza: rgtoggleSenhaAtual(222, 187, 247);
   --branco: #ffffff;
   --sombra: 0 8px 20px  rgba(60, 0, 97, 0.2);
 }
@@ -215,6 +215,7 @@ button:hover {
   animation: shake 0.4s;
 }
 
+
 /* --- Animações --- */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(15px); }
@@ -257,4 +258,62 @@ button:hover {
     max-width: 320px;
     margin-top: -40px;
   }
+}
+
+/* ================================
+   🔥 ÍCONE DO OLHINHO (SHOW/HIDE)
+   ================================ */
+
+.icon-right-pass {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--roxo);
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.icon-right-pass:hover {
+    color: var(--roxo-claro);
+}
+
+/* Garante que o input tenha espaço para o ícone */
+.input-wrapper input[type="password"],
+.input-wrapper input[type="text"] {
+    padding-right: 45px;
+}
+
+/* Quando o campo estiver focado */
+.input-wrapper.focused .icon-right-pass {
+    color: var(--roxo-claro);
+}
+
+
+/* ================================
+   📱 RESPONSIVIDADE OLHINHO
+   ================================ */
+@media (max-width: 600px) {
+
+    .icon-right-pass {
+        right: 10px;
+        font-size: 16px;
+    }
+
+    .input-wrapper input {
+        padding-right: 40px;
+    }
+}
+
+@media (max-width: 400px) {
+
+    .icon-right-pass {
+        right: 8px;
+        font-size: 15px;
+    }
+
+    .input-wrapper input {
+        padding-right: 38px;
+    }
 }
